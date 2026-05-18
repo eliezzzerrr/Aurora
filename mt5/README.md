@@ -5,7 +5,7 @@ Two EAs in this folder:
 | File | Style | Timeframes | Sessions | Concurrent positions |
 |---|---|---|---|---|
 | **`Aurora.mq5`** | Day-trader | 1H bias / 15m execution | London + NY only | 1 |
-| **`AuroraScalper.mq5`** | Scalper | 15m bias / 5m sweep / 1m entry | 24/5 (no session lock) | up to 3 |
+| **`Aurora Scalper.mq5`** | Scalper | 15m bias / 5m sweep / 1m entry | 24/5 (no session lock) | up to 3 |
 
 Both implement the ICT/SMC sweep + CHoCH + OB retest structure, 2:1 RR minimum, 1% balance risk per trade, and daily safety circuit breakers. Different magic numbers — they can run side-by-side on the same chart without conflict.
 
@@ -38,7 +38,7 @@ Positions on tick: monitor +1R achievement → move SL to breakeven (if enabled)
 
 ---
 
-## AuroraScalper.mq5 — what it does
+## Aurora Scalper.mq5 — what it does
 
 Same 5-stage logic, but compressed:
 - HTF bias on **M15** instead of H1
@@ -74,7 +74,7 @@ Same 5-stage logic, but compressed:
 
 ### 1. Copy the EA file
 
-Copy `Aurora.mq5` and/or `AuroraScalper.mq5` to your MetaTrader 5 `Experts` folder:
+Copy `Aurora.mq5` and/or `Aurora Scalper.mq5` to your MetaTrader 5 `Experts` folder:
 
 **Windows path:**
 ```
@@ -93,7 +93,7 @@ In MetaEditor (F4 from MT5 or open MetaEditor directly):
 ### 3. Attach to XAUUSD chart
 
 - Open a XAUUSD chart in MT5 (chart timeframe doesn't matter — each EA reads its own internal TFs)
-- Drag `Navigator → Expert Advisors → Aurora` (or `AuroraScalper`) onto the chart
+- Drag `Navigator → Expert Advisors → Aurora` (or `Aurora Scalper`) onto the chart
 - In the popup:
   - **Common tab:** check `Allow Algo Trading` (required for auto-trade)
   - **Inputs tab:** review settings (see below)

@@ -1,5 +1,5 @@
 //+------------------------------------------------------------------+
-//|                                              AuroraScalper.mq5   |
+//|                                            Aurora Scalper.mq5    |
 //|              XAUUSD ICT/SMC Scalper (MT5) — 1m / 5m / 15m        |
 //|                                                                  |
 //|  Scalper variant of Aurora. Differences vs day-trader EA:        |
@@ -57,7 +57,7 @@ input int     InpHTFBiasBars   = 30;           // M15 bars for bias (~7.5 hours)
 
 input string  IH_Exec          = "════════ Execution ════════";
 input long    InpMagic         = 87742;        // Magic number (scalper)
-input string  InpComment       = "AuroraScalp";
+input string  InpComment       = "Aurora Scalper";
 input int     InpSlippage      = 30;
 input double  InpSLBufferPips  = 2.0;          // Extra pips beyond sweep wick (tighter on scalp)
 input int     InpLimitExpireBars = 20;         // M1 bars before pending limit auto-cancels (20 min)
@@ -131,7 +131,7 @@ int OnInit() {
    ResetSetup("INIT");
 
    LogInfo("==============================================");
-   LogInfo("Aurora SCALPER initialized on " + _Symbol);
+   LogInfo("Aurora Scalper initialized on " + _Symbol);
    LogInfo("  Magic:        " + IntegerToString(InpMagic));
    LogInfo("  Risk/trade:   " + DoubleToString(InpRiskPercent, 2) + "%");
    LogInfo("  Max positions: " + IntegerToString(InpMaxPositions));
@@ -146,7 +146,7 @@ int OnInit() {
 }
 
 void OnDeinit(const int reason) {
-   LogInfo("Aurora SCALPER deinit. Reason code: " + IntegerToString(reason));
+   LogInfo("Aurora Scalper deinit. Reason code: " + IntegerToString(reason));
 }
 
 //==================================================================
@@ -650,7 +650,7 @@ string TimestampStr() {
 
 void LogToFile(string level, string msg) {
    if (!InpLogToFile) return;
-   int h = FileOpen("AuroraScalper_Journal.txt", FILE_WRITE | FILE_READ | FILE_TXT | FILE_ANSI);
+   int h = FileOpen("Aurora Scalper Journal.txt", FILE_WRITE | FILE_READ | FILE_TXT | FILE_ANSI);
    if (h == INVALID_HANDLE) return;
    FileSeek(h, 0, SEEK_END);
    FileWriteString(h, TimestampStr() + " [" + level + "] " + msg + "\n");

@@ -54,17 +54,17 @@ Same 5-stage logic, but compressed:
 | Input | Default | Notes |
 |---|---|---|
 | `InpRiskPercent` | 0.5 | Lower per-trade risk since 3 can be open at once |
-| `InpRRMin` | 1.5 | Scalper-friendly RR (was 2.0; lowered after low trade count) |
+| `InpRRMin` | 2.0 | Minimum reward-to-risk (1.5 was tested and destroyed edge) |
 | `InpMaxPositions` | 3 | Hard cap on concurrent open + pending orders |
 | `InpUseKillzones` | false | Off by default. Set true to restrict to London/NY |
 | `InpBiasTF` | M15 | HTF bias |
 | `InpSweepTF` | M5 | Liquidity sweep detection |
 | `InpEntryTF` | M1 | CHoCH, OB, entry |
 | `InpSwingLookback` | 2 | Tighter (1m needs less context) |
-| `InpRequireEqualHighs` | **false** | false = sweep any prominent swing high/low (more trades). true = strict clustered equal-highs only (fewer, cleaner) |
+| `InpRequireEqualHighs` | **true** | true = strict clustered equal-highs (recommended — preserves edge). false = sweep any swing (kills win rate per backtest) |
 | `InpEqualHighTolPips` | 2.0 | Pip tolerance when InpRequireEqualHighs = true |
 | `InpStructureBars` | 120 | M5 bars for pool scan (~10 hours) |
-| `InpSweepTimeoutBars` | 8 | M1 bars after sweep before resetting if no CHoCH (was 15; tightened) |
+| `InpSweepTimeoutBars` | 15 | M1 bars after sweep before resetting if no CHoCH |
 | `InpSLBufferPips` | 2.0 | Tighter SL buffer |
 | `InpLimitExpireBars` | 20 | M1 bars before pending limit auto-cancels |
 | `InpMaxTradesDay` | 15 | Higher daily cap for scalper |

@@ -29,7 +29,7 @@
 
 input string  IH_Risk          = "════════ Risk ════════";
 input double  InpRiskPercent   = 0.5;          // Risk per trade (% of balance) — lower for scalper since 3 concurrent
-input double  InpRRMin         = 1.5;          // Minimum reward-to-risk ratio (1.5 = scalper-friendly)
+input double  InpRRMin         = 2.0;          // Minimum reward-to-risk ratio (reverted to 2.0 after 1.5 destroyed edge in backtest)
 input bool    InpMoveBE_at1R   = false;        // Move SL to BE at +1R (default OFF)
 
 input string  IH_Pos           = "════════ Position Limits ════════";
@@ -51,11 +51,11 @@ input ENUM_TIMEFRAMES InpBiasTF     = PERIOD_M15;  // HTF bias timeframe
 input ENUM_TIMEFRAMES InpSweepTF    = PERIOD_M5;   // Liquidity sweep detection timeframe
 input ENUM_TIMEFRAMES InpEntryTF    = PERIOD_M1;   // CHoCH + OB + entry timeframe
 input int     InpSwingLookback = 2;            // Bars left/right for swing pivot (tighter on 1m)
-input bool    InpRequireEqualHighs = false;    // true: only sweep clustered equal-highs/lows. false: sweep any prominent swing (more trades)
+input bool    InpRequireEqualHighs = true;     // true: only sweep clustered equal-highs/lows (recommended — preserves edge). false: sweep any swing (more trades but kills win rate, per backtest)
 input double  InpEqualHighTolPips = 2.0;       // Pip tolerance when InpRequireEqualHighs = true
 input int     InpStructureBars = 120;          // M5 bars for liquidity pools (~10 hours)
 input int     InpHTFBiasBars   = 30;           // M15 bars for bias (~7.5 hours)
-input int     InpSweepTimeoutBars = 8;         // M1 bars after sweep before resetting if no CHoCH (was 15 — tightened)
+input int     InpSweepTimeoutBars = 15;        // M1 bars after sweep before resetting if no CHoCH (reverted from 8 to 15 — too tight hurt fills)
 
 input string  IH_Exec          = "════════ Execution ════════";
 input long    InpMagic         = 87742;        // Magic number (scalper)
@@ -419,7 +419,9 @@ void FindLiquidityPools(int lookback, double &bsl, datetime &bslTime, double &ss
    }
 
    if (InpRequireEqualHighs) {
-      // STRICT mode: only clustered equal-highs / equal-lows count as liquidity pools
+      // STRICT mode (v1 original): prefer clustered equal-highs / equal-lows.
+      // If no cluster found, fall back to the HIGHEST swing high / LOWEST swing low
+      // in the lookback window (still a structurally meaningful level).
       for (int i = 0; i < ArraySize(swingHighs); i++) {
          for (int j = i + 1; j < ArraySize(swingHighs); j++) {
             if (MathAbs(swingHighs[i] - swingHighs[j]) <= tol) {
@@ -438,15 +440,25 @@ void FindLiquidityPools(int lookback, double &bsl, datetime &bslTime, double &ss
             }
          }
       }
-   }
-
-   // Fallback / LOOSE mode: use the most recent prominent swing high/low
-   // (swingHighs[0] = newest because the scan iterates from low index = recent bar)
-   if (bsl <= 0 && ArraySize(swingHighs) > 0) {
-      bsl = swingHighs[0]; bslTime = swingHighsT[0];
-   }
-   if (ssl <= 0 && ArraySize(swingLows) > 0) {
-      ssl = swingLows[0]; sslTime = swingLowsT[0];
+      // Strict-mode fallback: highest swing high / lowest swing low
+      if (bsl <= 0 && ArraySize(swingHighs) > 0) {
+         int idx = ArrayMaximum(swingHighs);
+         bsl = swingHighs[idx]; bslTime = swingHighsT[idx];
+      }
+      if (ssl <= 0 && ArraySize(swingLows) > 0) {
+         int idx = ArrayMinimum(swingLows);
+         ssl = swingLows[idx]; sslTime = swingLowsT[idx];
+      }
+   } else {
+      // LOOSE mode (not recommended; documented in case user wants to experiment):
+      // use the MOST RECENT swing high/low as the pool, regardless of clustering.
+      // Backtest showed this drops win rate dramatically — use only with caution.
+      if (ArraySize(swingHighs) > 0) {
+         bsl = swingHighs[0]; bslTime = swingHighsT[0];
+      }
+      if (ArraySize(swingLows) > 0) {
+         ssl = swingLows[0]; sslTime = swingLowsT[0];
+      }
    }
 }
 

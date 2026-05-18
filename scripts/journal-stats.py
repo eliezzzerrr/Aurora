@@ -22,7 +22,7 @@ JOURNAL = ROOT / "trades" / "journal.md"
 # Header: "## #NNNN · YYYY-MM-DD HH:MM PHT · BUY|SELL|NO-TRADE"
 # Also accepts legacy UTC for backward compatibility on old entries.
 ENTRY_HEADER_RE = re.compile(
-    r"^##\s+#(?P<id>\d{4})\s+·\s+(?P<date>\d{4}-\d{2}-\d{2})\s+(?P<time>\d{2}:\d{2})\s+(?:PHT|UTC)\s+·\s+(?P<dir>BUY|SELL|NO-TRADE)\s*$",
+    r"^##\s+#(?P<id>\d{4})\s+·\s+(?P<date>\d{4}-\d{2}-\d{2})\s+(?P<time>\d{2}:\d{2})\s+(?:PHT|UTC)\s+·\s+(?P<dir>BUY|SELL|NO-TRADE)\b.*$",
     re.MULTILINE,
 )
 
@@ -117,9 +117,10 @@ def compute_stats(entries: list[dict]) -> dict:
         e for e in signaled
         if e["outcome"] in ("WON", "LOST", "BE")
     ]
+    # "OPEN" is the current term; "PENDING" kept for backward compatibility with legacy entries
     pending = [
         e for e in signaled
-        if (e["outcome"] or "PENDING") not in ("WON", "LOST", "BE")
+        if (e["outcome"] or "OPEN") not in ("WON", "LOST", "BE")
     ]
 
     wins = [e for e in resolved if e["outcome"] == "WON"]

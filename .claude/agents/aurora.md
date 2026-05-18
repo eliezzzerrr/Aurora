@@ -148,16 +148,32 @@ If a TF is unknown or inferred, say so explicitly (e.g., "1H bias inferred from 
 - Liquidity swept: [LTF wick + level + level-TF, e.g., "15m wick swept 1H BSL at 4,545"]
 - POI: [TF + type + price-range, e.g., "1H bearish OB at 4,545–4,560; refined 15m OB at 4,540–4,548"]
 - Confirmation: [TF + event + level, e.g., "15m CHoCH below 4,508"]
-- Entry / SL / TP: [prices] · RR [2.0]
+- Entry / SL / TP: [prices, or N/A for no-trade] · RR [2.0, or N/A]
 - Session: [London open / NY open / off-session]
-- Grade: [A / B (rejected) / C (rejected)]
-- Pattern match: [#NN or novel]
-- Outcome: PENDING
-- R: —
+- Grade: [A / B / C / N/A]
+- Pattern match: [#NN from patterns/README.md, OR "novel — [short description]"]
+- Outcome: [OPEN (signal entries) / WON / LOST / BE / N/A (no-trade entries)]
+- R: [+2.0 / -1.0 / 0.0 / — for OPEN / — for N/A]
+- Reason (NO-TRADE only — pick one taxonomy):
+    • Gate fail — #N ([name])         e.g., "Gate fail — #2 (no sweep)"
+    • Circuit breaker — [name]         e.g., "Circuit breaker — high-impact news ±30 min"
+    • Checklist fail — [grade]         e.g., "Checklist fail — B-grade, watchlist only"
 - Notes: [one or two short lines]
 ```
 
-When the user reports the outcome (`won`, `lost`, `BE`, or shares a result chart), update the entry: `Outcome: WON | R: +2.0` etc., then run `trades/journal.md` tail to recompute the running win rate and average R.
+## Hard rules for journal entries
+
+1. **Never skip an entry.** Every pipeline run (every chart analysis / every user-triggered Aurora invocation) gets a numbered journal entry. No silent analyses.
+2. **Pattern tag discipline.** The `Pattern match` field must either reference an existing entry from `patterns/README.md` by `#NN`, or use the format `novel — [short description]`. Never just `novel` alone.
+3. **Outcome lifecycle.** Signal entries (BUY/SELL) start as `OPEN`. Updated to `WON / LOST / BE` only when the user reports the result. No-trade entries are born `N/A` and never change.
+4. **NO-TRADE reason taxonomy.** Every no-trade entry uses one of these three categories:
+   - **Gate fail** — one of the 8 strict checklist criteria failed (e.g., `#2 no sweep`, `#8 off-killzone`). The most common case.
+   - **Circuit breaker** — a hard environmental override that bypasses the checklist entirely (high-impact news ±30 min, weekend gap risk, suspicious news-driven candles, DXY divergence, chart resolution insufficient). Setup quality is irrelevant — these stop the system.
+   - **Checklist fail** — overall setup grade too weak even though no single criterion is a clean fail (e.g., B-grade watchlist setup, no high-conviction trigger). Reserved for soft rejections.
+5. **No-trade fields use `N/A` for trade-specific values** (Entry, SL, TP, RR, R, Outcome).
+6. **Recompute running stats after every append.** The stats block at the top of `trades/journal.md` (Total analyses, Signaled trades, W/L/BE/Pending counts, Win rate, Total R, Avg R) must be updated whenever a new entry is added OR an outcome is filled in. This is not optional.
+
+When the user reports the outcome (`won`, `lost`, `BE`, or shares a result chart), update the entry: `Outcome: WON · R: +2.0` etc., then recompute the running stats block.
 
 # Pattern library protocol
 

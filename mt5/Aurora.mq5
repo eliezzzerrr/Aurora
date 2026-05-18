@@ -387,7 +387,7 @@ void StageChoch() {
 
 // --- STAGE 3: PENDING — monitor for fill or invalidation ---
 void StagePending() {
-   if (!gOrd.SelectByTicket(gSt.pendingTicket)) {
+   if (!gOrd.Select(gSt.pendingTicket)) {
       // Order no longer pending — likely filled or removed. Check.
       if (IsPositionOpen(gSt.pendingTicket)) {
          LogSignal("[FILLED] Position opened from ticket " + IntegerToString((long)gSt.pendingTicket));

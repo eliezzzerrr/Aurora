@@ -1,12 +1,19 @@
-# Aurora EA — MetaTrader 5 Expert Advisor
+# Aurora EAs — MetaTrader 5 Expert Advisors
 
-MQL5 implementation of the Aurora XAUUSD ICT/SMC day-trading system. Single-file EA that auto-detects sweeps, CHoCH, OB retests, and executes 2:1 RR trades during London/NY killzones only.
+Two EAs in this folder:
 
-**Status: v1.0 — Demo-only. Do not run on live capital until validated with 30+ closed trades.**
+| File | Style | Timeframes | Sessions | Concurrent positions |
+|---|---|---|---|---|
+| **`Aurora.mq5`** | Day-trader | 1H bias / 15m execution | London + NY only | 1 |
+| **`AuroraScalper.mq5`** | Scalper | 15m bias / 5m sweep / 1m entry | 24/5 (no session lock) | up to 3 |
+
+Both implement the ICT/SMC sweep + CHoCH + OB retest structure, 2:1 RR minimum, 1% balance risk per trade, and daily safety circuit breakers. Different magic numbers — they can run side-by-side on the same chart without conflict.
+
+**Status: v1.0 — Demo-only. Do not run on live capital until validated with 30+ closed trades per EA.**
 
 ---
 
-## What it does
+## Aurora.mq5 — what it does
 
 On every new M15 bar, the EA runs a 4-stage state machine:
 
@@ -31,11 +38,43 @@ Positions on tick: monitor +1R achievement → move SL to breakeven (if enabled)
 
 ---
 
-## Installation
+## AuroraScalper.mq5 — what it does
+
+Same 5-stage logic, but compressed:
+- HTF bias on **M15** instead of H1
+- Sweep detection on **M5** instead of M15
+- CHoCH + OB + entry on **M1** instead of M15
+- After placing limit order, immediately resets to IDLE so the next M1 bar can hunt new setups
+- Up to **3 concurrent positions** (open + pending counted together)
+- **No session filter** — runs 24/5
+- Tighter pip tolerances and shorter timeouts
+
+### Scalper-specific inputs (defaults shown)
+
+| Input | Default | Notes |
+|---|---|---|
+| `InpRiskPercent` | 0.5 | Lower per-trade risk since 3 can be open at once |
+| `InpMaxPositions` | 3 | Hard cap on concurrent open + pending orders |
+| `InpUseKillzones` | false | Off by default. Set true to restrict to London/NY |
+| `InpBiasTF` | M15 | HTF bias |
+| `InpSweepTF` | M5 | Liquidity sweep detection |
+| `InpEntryTF` | M1 | CHoCH, OB, entry |
+| `InpSwingLookback` | 2 | Tighter (1m needs less context) |
+| `InpEqualHighTolPips` | 2.0 | Tighter equal-high tolerance |
+| `InpStructureBars` | 120 | M5 bars for pool scan (~10 hours) |
+| `InpSLBufferPips` | 2.0 | Tighter SL buffer |
+| `InpLimitExpireBars` | 20 | M1 bars before pending limit auto-cancels |
+| `InpMaxTradesDay` | 15 | Higher daily cap for scalper |
+| `InpMaxConsecLoss` | 3 | Halt after 3 in a row |
+| `InpMagic` | 87742 | Distinct from day-trader (87741) — both can run on same chart |
+
+---
+
+## Installation (same procedure for both EAs)
 
 ### 1. Copy the EA file
 
-Copy `Aurora.mq5` to your MetaTrader 5 `Experts` folder:
+Copy `Aurora.mq5` and/or `AuroraScalper.mq5` to your MetaTrader 5 `Experts` folder:
 
 **Windows path:**
 ```
@@ -53,8 +92,8 @@ In MetaEditor (F4 from MT5 or open MetaEditor directly):
 
 ### 3. Attach to XAUUSD chart
 
-- Open a XAUUSD chart in MT5 (any timeframe — EA only reads M15 + H1)
-- Drag `Navigator → Expert Advisors → Aurora` onto the chart
+- Open a XAUUSD chart in MT5 (chart timeframe doesn't matter — each EA reads its own internal TFs)
+- Drag `Navigator → Expert Advisors → Aurora` (or `AuroraScalper`) onto the chart
 - In the popup:
   - **Common tab:** check `Allow Algo Trading` (required for auto-trade)
   - **Inputs tab:** review settings (see below)

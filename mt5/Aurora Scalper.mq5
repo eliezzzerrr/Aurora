@@ -29,7 +29,7 @@
 
 input string  IH_Risk          = "════════ Risk ════════";
 input double  InpRiskPercent   = 0.5;          // Risk per trade (% of balance) — lower for scalper since 3 concurrent
-input double  InpRRMin         = 2.0;          // Minimum reward-to-risk ratio
+input double  InpRRMin         = 1.5;          // Minimum reward-to-risk ratio (1.5 = scalper-friendly)
 input bool    InpMoveBE_at1R   = false;        // Move SL to BE at +1R (default OFF)
 
 input string  IH_Pos           = "════════ Position Limits ════════";
@@ -51,9 +51,11 @@ input ENUM_TIMEFRAMES InpBiasTF     = PERIOD_M15;  // HTF bias timeframe
 input ENUM_TIMEFRAMES InpSweepTF    = PERIOD_M5;   // Liquidity sweep detection timeframe
 input ENUM_TIMEFRAMES InpEntryTF    = PERIOD_M1;   // CHoCH + OB + entry timeframe
 input int     InpSwingLookback = 2;            // Bars left/right for swing pivot (tighter on 1m)
-input double  InpEqualHighTolPips = 2.0;       // Pip tolerance (tighter on scalp)
+input bool    InpRequireEqualHighs = false;    // true: only sweep clustered equal-highs/lows. false: sweep any prominent swing (more trades)
+input double  InpEqualHighTolPips = 2.0;       // Pip tolerance when InpRequireEqualHighs = true
 input int     InpStructureBars = 120;          // M5 bars for liquidity pools (~10 hours)
 input int     InpHTFBiasBars   = 30;           // M15 bars for bias (~7.5 hours)
+input int     InpSweepTimeoutBars = 8;         // M1 bars after sweep before resetting if no CHoCH (was 15 — tightened)
 
 input string  IH_Exec          = "════════ Execution ════════";
 input long    InpMagic         = 87742;        // Magic number (scalper)
@@ -240,9 +242,9 @@ void StageIdle() {
 
 // STAGE 1: SWEPT — wait for CHoCH on M1
 void StageSwept() {
-   // Timeout: 15 M1 bars since sweep
+   // Timeout: configurable M1 bars since sweep
    int barsSince = iBarShift(_Symbol, InpEntryTF, gSt.sweepBarTime);
-   if (barsSince > 15) {
+   if (barsSince > InpSweepTimeoutBars) {
       ResetSetup("SWEEP_TIMEOUT");
       return;
    }
@@ -416,32 +418,35 @@ void FindLiquidityPools(int lookback, double &bsl, datetime &bslTime, double &ss
       }
    }
 
-   for (int i = 0; i < ArraySize(swingHighs); i++) {
-      for (int j = i + 1; j < ArraySize(swingHighs); j++) {
-         if (MathAbs(swingHighs[i] - swingHighs[j]) <= tol) {
-            double avg = (swingHighs[i] + swingHighs[j]) / 2.0;
-            if (avg > bsl) { bsl = avg; bslTime = swingHighsT[i]; }
-            break;
+   if (InpRequireEqualHighs) {
+      // STRICT mode: only clustered equal-highs / equal-lows count as liquidity pools
+      for (int i = 0; i < ArraySize(swingHighs); i++) {
+         for (int j = i + 1; j < ArraySize(swingHighs); j++) {
+            if (MathAbs(swingHighs[i] - swingHighs[j]) <= tol) {
+               double avg = (swingHighs[i] + swingHighs[j]) / 2.0;
+               if (avg > bsl) { bsl = avg; bslTime = swingHighsT[i]; }
+               break;
+            }
          }
       }
-   }
-   for (int i = 0; i < ArraySize(swingLows); i++) {
-      for (int j = i + 1; j < ArraySize(swingLows); j++) {
-         if (MathAbs(swingLows[i] - swingLows[j]) <= tol) {
-            double avg = (swingLows[i] + swingLows[j]) / 2.0;
-            if (ssl <= 0 || avg < ssl) { ssl = avg; sslTime = swingLowsT[i]; }
-            break;
+      for (int i = 0; i < ArraySize(swingLows); i++) {
+         for (int j = i + 1; j < ArraySize(swingLows); j++) {
+            if (MathAbs(swingLows[i] - swingLows[j]) <= tol) {
+               double avg = (swingLows[i] + swingLows[j]) / 2.0;
+               if (ssl <= 0 || avg < ssl) { ssl = avg; sslTime = swingLowsT[i]; }
+               break;
+            }
          }
       }
    }
 
+   // Fallback / LOOSE mode: use the most recent prominent swing high/low
+   // (swingHighs[0] = newest because the scan iterates from low index = recent bar)
    if (bsl <= 0 && ArraySize(swingHighs) > 0) {
-      int idx = ArrayMaximum(swingHighs);
-      bsl = swingHighs[idx]; bslTime = swingHighsT[idx];
+      bsl = swingHighs[0]; bslTime = swingHighsT[0];
    }
    if (ssl <= 0 && ArraySize(swingLows) > 0) {
-      int idx = ArrayMinimum(swingLows);
-      ssl = swingLows[idx]; sslTime = swingLowsT[idx];
+      ssl = swingLows[0]; sslTime = swingLowsT[0];
    }
 }
 

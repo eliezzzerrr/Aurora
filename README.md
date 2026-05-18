@@ -133,6 +133,9 @@ If any fails at the 30-trade review, stay on demo. Live capital is earned, not a
 .
 ├── README.md                    This file
 ├── playbook.md                  Master reference — Aurora reads first on every analysis
+├── mt5/
+│   ├── Aurora.mq5               MetaTrader 5 Expert Advisor (auto-trader)
+│   └── README.md                MT5 install / inputs / backtest guide
 ├── doctrine/
 │   ├── entry-criteria.md        The strict 8-point checklist (load-bearing)
 │   ├── ict-framework.md         ICT / SMC vocabulary

@@ -1,0 +1,36 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Claude Code worktrees (per-agent ephemeral)
+.claude/worktrees/
+
+# Chart screenshots (large, ephemeral — keep markdown notes instead)
+charts/*.png
+charts/*.jpg
+charts/*.jpeg
+!charts/README.md
+
+# Local-only env / secrets (defensive — none currently committed)
+.env
+.env.*
+*.secret
+
+# Claude Code local permissions (per-machine, not shared)
+.claude/settings.local.json

@@ -40,7 +40,7 @@
 input string  IH_Risk          = "════════ Risk ════════";
 input double  InpRiskPercent   = 1.0;          // Risk per trade (% of balance)
 input double  InpRRMin         = 2.0;          // Minimum reward-to-risk ratio
-input bool    InpMoveBE_at1R   = true;         // Move SL to BE at +1R
+input bool    InpMoveBE_at1R   = false;        // Move SL to BE at +1R (default OFF — backtest showed it caps wins at ~1R while losses stay full -1R, killing 2:1 RR)
 
 input string  IH_KZ            = "════════ Killzones (broker time) ════════";
 input bool    InpUseKillzones  = true;         // Restrict to London + NY AM

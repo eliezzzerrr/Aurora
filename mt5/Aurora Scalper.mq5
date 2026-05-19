@@ -1,21 +1,24 @@
 //+------------------------------------------------------------------+
 //|                                            Aurora Scalper.mq5    |
-//|              XAUUSD ICT/SMC Scalper (MT5) — 1m / 5m / 15m        |
+//|              XAUUSD EMA-12 Retest Scalper (MT5) — M1 / M15       |
 //|                                                                  |
-//|  Scalper variant of Aurora. Differences vs day-trader EA:        |
-//|    - HTF bias from M15 (not H1)                                  |
-//|    - Sweep detection on M5 (not M15)                             |
-//|    - CHoCH + OB on M1 (not M15)                                  |
-//|    - Up to 3 concurrent positions (not 1)                        |
-//|    - NO session/killzone filter — runs 24/5                      |
-//|    - Faster pending-order expiry (1m bars)                       |
+//|  v2.2 (ANTISIGNAL EXPERIMENT — post second blowout 2026-05-19):  |
+//|    v2.1 lost -99% over 833 trades: 19.81% wins vs 25% RANDOM     |
+//|    baseline at 3:1 RR. The entries themselves are anti-edge —    |
+//|    M1 EMA retests in trend direction systematically fail because |
+//|    XAUUSD M1 is mean-reverting, not trending. Filters made it    |
+//|    worse (removed 79 winners, added 8 losers).                   |
 //|                                                                  |
-//|  Same 2:1 RR enforcement, 1% balance risk, BE rule disabled      |
-//|  by default (backtest showed BE caps wins).                      |
+//|  v2.2 flips execution direction (InpInvertDirection=true):       |
+//|    - Same triggers, same filters, same SL/TP distances           |
+//|    - But where v2.1 went SHORT, v2.2 goes LONG (and vice versa)  |
+//|    - Theory: if 80% of v2.1 entries hit SL, fading them should   |
+//|      capture the actual mean-reverting move                      |
+//|    - RISK: empirical play, may overfit. Backtest on 3 windows.   |
 //+------------------------------------------------------------------+
 #property copyright "Aurora — github.com/eliezzzerrr/Aurora"
 #property link      "https://github.com/eliezzzerrr/Aurora"
-#property version   "1.00"
+#property version   "2.20"
 #property strict
 
 #include <Trade/Trade.mqh>
@@ -27,14 +30,13 @@
 //                          INPUTS
 //==================================================================
 
-input string  IH_Risk          = "════════ Risk ════════";
-input double  InpRiskPercent   = 0.5;          // Risk per trade (% of balance) — lower for scalper since 3 concurrent
-input double  InpRRMin         = 2.0;          // Minimum reward-to-risk ratio (reverted to 2.0 after 1.5 destroyed edge in backtest)
-input bool    InpMoveBE_at1R   = false;        // Move SL to BE at +1R (default OFF)
+input string  IH_Risk          = "════════ Risk (fixed dollars) ════════";
+input double  InpStopLossDollars   = 5.0;      // Max loss per trade ($)
+input double  InpTakeProfitDollars = 15.0;     // Take profit target per trade ($) — 3:1 RR
+input double  InpSLPips            = 10.0;     // SL distance in pips (lot size sized to hit $ risk at this distance)
 
 input string  IH_Pos           = "════════ Position Limits ════════";
 input int     InpMaxPositions  = 3;            // Max concurrent open positions
-input int     InpMaxPendings   = 3;            // Max pending limit orders waiting to fill
 
 input string  IH_Sess          = "════════ Killzones (OFF for scalper) ════════";
 input bool    InpUseKillzones  = false;        // Off by default — scalper runs 24/5
@@ -46,27 +48,31 @@ input int     InpNYOpenM       = 30;
 input int     InpNYCloseH      = 15;
 input int     InpNYCloseM      = 30;
 
-input string  IH_Struct        = "════════ Structure (scalper timeframes) ════════";
-input ENUM_TIMEFRAMES InpBiasTF     = PERIOD_M15;  // HTF bias timeframe
-input ENUM_TIMEFRAMES InpSweepTF    = PERIOD_M5;   // Liquidity sweep detection timeframe
-input ENUM_TIMEFRAMES InpEntryTF    = PERIOD_M1;   // CHoCH + OB + entry timeframe
-input int     InpSwingLookback = 2;            // Bars left/right for swing pivot (tighter on 1m)
-input bool    InpRequireEqualHighs = true;     // true: only sweep clustered equal-highs/lows (recommended — preserves edge). false: sweep any swing (more trades but kills win rate, per backtest)
-input double  InpEqualHighTolPips = 2.0;       // Pip tolerance when InpRequireEqualHighs = true
-input int     InpStructureBars = 120;          // M5 bars for liquidity pools (~10 hours)
-input int     InpHTFBiasBars   = 30;           // M15 bars for bias (~7.5 hours)
-input int     InpSweepTimeoutBars = 15;        // M1 bars after sweep before resetting if no CHoCH (reverted from 8 to 15 — too tight hurt fills)
+input string  IH_Struct        = "════════ Structure / EMA ════════";
+input ENUM_TIMEFRAMES InpBiasTF  = PERIOD_M15; // HTF bias timeframe
+input ENUM_TIMEFRAMES InpEntryTF = PERIOD_M1;  // Entry timeframe (EMA + retest)
+input int     InpEMAPeriod     = 12;           // Entry EMA period (M1 retest)
+input int     InpHTFEMAPeriod  = 50;           // HTF trend EMA period (M15)
+input int     InpHTFBiasBars   = 30;           // M15 bars for swing-based bias (~7.5h)
+
+input string  IH_Filters       = "════════ Entry Filters (v2.1 — defaults ON) ════════";
+input bool    InpRequireRejectionClose = true; // M1 bar must close back on trend side after touch
+input bool    InpRequireEMASlope       = true; // M1 EMA(12) must slope in bias direction
+input int     InpEMASlopeBars          = 5;    // Bars back used to measure EMA slope
+input bool    InpRequireHTFTrend       = true; // M15 EMA(50) must slope in bias direction
+input int     InpHTFSlopeBars          = 3;    // M15 bars back to measure HTF EMA slope
+input int     InpCooldownBars          = 5;    // Min M1 bars between consecutive entries
+input double  InpMaxSpreadPips         = 3.0;  // Skip entry if spread exceeds this (in pips)
 
 input string  IH_Exec          = "════════ Execution ════════";
-input long    InpMagic         = 87742;        // Magic number (scalper)
-input string  InpComment       = "Aurora Scalper";
+input bool    InpInvertDirection = true;       // v2.2 ANTISIGNAL: flip BUY/SELL on every trigger
+input long    InpMagic         = 87742;        // Magic number
+input string  InpComment       = "Aurora Scalper v2.2";
 input int     InpSlippage      = 30;
-input double  InpSLBufferPips  = 2.0;          // Extra pips beyond sweep wick (tighter on scalp)
-input int     InpLimitExpireBars = 20;         // M1 bars before pending limit auto-cancels (20 min)
 
 input string  IH_Safety        = "════════ Safety ════════";
-input int     InpMaxTradesDay  = 15;           // Higher daily cap for scalper
-input int     InpMaxConsecLoss = 3;            // Halt after N consecutive losses
+input int     InpMaxTradesDay  = 30;           // Daily cap on filled entries
+input int     InpMaxConsecLoss = 4;            // Halt after N consecutive losses
 input bool    InpLogToFile     = true;
 
 //==================================================================
@@ -79,33 +85,14 @@ CPositionInfo gPos;
 COrderInfo    gOrd;
 
 datetime      gLastBarEntry  = 0;
+datetime      gLastFillBar   = 0;     // M1 bar time of last placed entry (for cooldown)
 datetime      gTodayKey      = 0;
 int           gTradesToday   = 0;
 int           gConsecLosses  = 0;
 bool          gHaltedToday   = false;
 
-// Per-entry-bar setup state (single state machine, but resets to IDLE
-// immediately after placing limit so next bar can hunt fresh setups)
-enum ESetupStage {
-   STAGE_IDLE       = 0,
-   STAGE_SWEPT      = 1,
-   STAGE_CHOCH      = 2
-};
-
-struct SetupState {
-   ESetupStage stage;
-   int         direction;        // -1 short, +1 long
-   double      sweptLevel;
-   double      sweepWickPeak;
-   double      chochSwing;
-   double      obTop;
-   double      obBot;
-   double      targetLiq;
-   datetime    sweepBarTime;
-   datetime    chochBarTime;
-};
-SetupState    gSt;
-
+int           gEMAHandle     = INVALID_HANDLE;  // EMA(12) on M1
+int           gHTFEMAHandle  = INVALID_HANDLE;  // EMA(50) on M15
 double        gPip;
 
 //==================================================================
@@ -130,24 +117,42 @@ int OnInit() {
       gPip = _Point * 10;
    }
 
-   ResetSetup("INIT");
+   gEMAHandle = iMA(_Symbol, InpEntryTF, InpEMAPeriod, 0, MODE_EMA, PRICE_CLOSE);
+   if (gEMAHandle == INVALID_HANDLE) {
+      LogError("Failed to create entry EMA handle");
+      return INIT_FAILED;
+   }
+   gHTFEMAHandle = iMA(_Symbol, InpBiasTF, InpHTFEMAPeriod, 0, MODE_EMA, PRICE_CLOSE);
+   if (gHTFEMAHandle == INVALID_HANDLE) {
+      LogError("Failed to create HTF EMA handle");
+      return INIT_FAILED;
+   }
 
    LogInfo("==============================================");
-   LogInfo("Aurora Scalper initialized on " + _Symbol);
-   LogInfo("  Magic:        " + IntegerToString(InpMagic));
-   LogInfo("  Risk/trade:   " + DoubleToString(InpRiskPercent, 2) + "%");
-   LogInfo("  Max positions: " + IntegerToString(InpMaxPositions));
-   LogInfo("  RR min:       " + DoubleToString(InpRRMin, 1));
-   LogInfo("  Bias TF:      " + EnumToString(InpBiasTF));
-   LogInfo("  Sweep TF:     " + EnumToString(InpSweepTF));
-   LogInfo("  Entry TF:     " + EnumToString(InpEntryTF));
-   LogInfo("  Killzones:    " + (InpUseKillzones ? "ON" : "OFF (24/5)"));
+   LogInfo("Aurora Scalper v2.2 (EMA-12 retest + ANTISIGNAL) on " + _Symbol);
+   LogInfo("  Invert direction: " + (InpInvertDirection ? "YES (fade v2.1 entries)" : "NO (v2.1 behavior)"));
+   LogInfo("  Magic:           " + IntegerToString(InpMagic));
+   LogInfo("  Stop loss ($):   " + DoubleToString(InpStopLossDollars, 2));
+   LogInfo("  Take profit($):  " + DoubleToString(InpTakeProfitDollars, 2));
+   LogInfo("  SL pips:         " + DoubleToString(InpSLPips, 1));
+   LogInfo("  RR:              " + DoubleToString(InpTakeProfitDollars / InpStopLossDollars, 2));
+   LogInfo("  Max positions:   " + IntegerToString(InpMaxPositions));
+   LogInfo("  Bias TF / EMA:   " + EnumToString(InpBiasTF) + " / EMA(" + IntegerToString(InpHTFEMAPeriod) + ")");
+   LogInfo("  Entry TF / EMA:  " + EnumToString(InpEntryTF) + " / EMA(" + IntegerToString(InpEMAPeriod) + ")");
+   LogInfo("  Filters: rejClose=" + (InpRequireRejectionClose?"Y":"N") +
+           " emaSlope=" + (InpRequireEMASlope?"Y":"N") +
+           " htfTrend=" + (InpRequireHTFTrend?"Y":"N") +
+           " cooldown=" + IntegerToString(InpCooldownBars) +
+           " maxSprd=" + DoubleToString(InpMaxSpreadPips, 1) + "p");
+   LogInfo("  Killzones:       " + (InpUseKillzones ? "ON" : "OFF (24/5)"));
    LogInfo("==============================================");
 
    return INIT_SUCCEEDED;
 }
 
 void OnDeinit(const int reason) {
+   if (gEMAHandle    != INVALID_HANDLE) { IndicatorRelease(gEMAHandle);    gEMAHandle    = INVALID_HANDLE; }
+   if (gHTFEMAHandle != INVALID_HANDLE) { IndicatorRelease(gHTFEMAHandle); gHTFEMAHandle = INVALID_HANDLE; }
    LogInfo("Aurora Scalper deinit. Reason code: " + IntegerToString(reason));
 }
 
@@ -156,9 +161,6 @@ void OnDeinit(const int reason) {
 //==================================================================
 
 void OnTick() {
-   ManageOpenPositions();
-
-   // Run state machine on new M1 bar (entry TF)
    datetime curBar = iTime(_Symbol, InpEntryTF, 0);
    if (curBar == 0 || curBar == gLastBarEntry) return;
    gLastBarEntry = curBar;
@@ -173,199 +175,145 @@ void OnTick() {
 void OnNewEntryBar() {
    UpdateDailyCounters();
 
-   if (gHaltedToday) {
-      if (gSt.stage != STAGE_IDLE) ResetSetup("HALTED");
+   if (gHaltedToday) return;
+   if (gTradesToday >= InpMaxTradesDay) return;
+   if (InpUseKillzones && !IsInKillzone()) return;
+   if (CountActiveAuroraOrders() >= InpMaxPositions) return;
+
+   // Cooldown gate
+   if (gLastFillBar > 0) {
+      int barsSinceFill = iBarShift(_Symbol, InpEntryTF, gLastFillBar);
+      if (barsSinceFill < InpCooldownBars) return;
+   }
+
+   // Spread gate
+   double spreadPrice = (SymbolInfoDouble(_Symbol, SYMBOL_ASK) - SymbolInfoDouble(_Symbol, SYMBOL_BID));
+   double spreadPips  = spreadPrice / gPip;
+   if (spreadPips > InpMaxSpreadPips) {
+      LogDebug(StringFormat("[SKIP] Spread %.2f pips > max %.1f", spreadPips, InpMaxSpreadPips));
       return;
    }
-   if (gTradesToday >= InpMaxTradesDay) {
-      if (gSt.stage != STAGE_IDLE) ResetSetup("MAX_TRADES");
-      return;
+
+   int bias = GetHTFBias();
+   if (bias == 0) return;
+
+   // HTF trend confirmation (EMA50 on M15 must slope in bias direction)
+   if (InpRequireHTFTrend) {
+      int htfSlope = GetEMASlope(gHTFEMAHandle, InpHTFSlopeBars);
+      if (htfSlope != bias) return;
    }
 
-   if (InpUseKillzones && !IsInKillzone()) {
-      if (gSt.stage != STAGE_IDLE) ResetSetup("OFF_KILLZONE");
-      return;
+   // M1 EMA values
+   double ema1, ema2;
+   if (!GetEMAValue(gEMAHandle, 1, ema1)) return;
+   if (!GetEMAValue(gEMAHandle, 2, ema2)) return;
+
+   // M1 EMA slope must match bias
+   if (InpRequireEMASlope) {
+      int m1Slope = GetEMASlope(gEMAHandle, InpEMASlopeBars);
+      if (m1Slope != bias) return;
    }
 
-   // State machine
-   switch (gSt.stage) {
-      case STAGE_IDLE:  StageIdle();  break;
-      case STAGE_SWEPT: StageSwept(); break;
-      case STAGE_CHOCH: StageChoch(); break;
-   }
-}
+   double bar1O = iOpen (_Symbol, InpEntryTF, 1);
+   double bar1H = iHigh (_Symbol, InpEntryTF, 1);
+   double bar1L = iLow  (_Symbol, InpEntryTF, 1);
+   double bar1C = iClose(_Symbol, InpEntryTF, 1);
+   double bar2H = iHigh (_Symbol, InpEntryTF, 2);
+   double bar2L = iLow  (_Symbol, InpEntryTF, 2);
 
-//==================================================================
-//                       STATE MACHINE STAGES
-//==================================================================
-
-// STAGE 0: IDLE — scan M5 for sweep of liquidity pool
-void StageIdle() {
-   int htfBias = GetHTFBias();
-   if (htfBias == 0) return;
-
-   double bsl = 0, ssl = 0;
-   datetime bslTime = 0, sslTime = 0;
-   FindLiquidityPools(InpStructureBars, bsl, bslTime, ssl, sslTime);
-
-   // Detect sweep on the just-closed M5 bar (index 1)
-   double bar1H = iHigh(_Symbol, InpSweepTF, 1);
-   double bar1L = iLow(_Symbol, InpSweepTF, 1);
-   double bar1C = iClose(_Symbol, InpSweepTF, 1);
-
-   if (htfBias < 0 && bsl > 0) {
-      if (bar1H > bsl && bar1C < bsl) {
-         gSt.stage          = STAGE_SWEPT;
-         gSt.direction      = -1;
-         gSt.sweptLevel     = bsl;
-         gSt.sweepWickPeak  = bar1H;
-         gSt.sweepBarTime   = iTime(_Symbol, InpSweepTF, 1);
-         LogSignal("[SWEEP-S] BSL @ " + DoubleToString(bsl, _Digits) +
-                   " wicked to " + DoubleToString(bar1H, _Digits) +
-                   ", M5 close " + DoubleToString(bar1C, _Digits));
+   // ---- "SHORT-side" trigger (bias short + bar wicks up to EMA) ----
+   // v2.1 went short here. v2.2 with InpInvertDirection goes LONG (fade the rejection).
+   if (bias < 0 && bar2H < ema2 && bar1H >= ema1) {
+      if (InpRequireRejectionClose && bar1C >= ema1) {
+         LogDebug("[SKIP-S] No rejection close — bar1 closed above EMA");
          return;
       }
+      int execDir = (InpInvertDirection ? +1 : -1);
+      LogSignal(StringFormat("[RETEST-S%s] H=%s C=%s EMA=%s → exec %s",
+               (InpInvertDirection ? "/INV" : ""),
+               DoubleToString(bar1H, _Digits),
+               DoubleToString(bar1C, _Digits),
+               DoubleToString(ema1, _Digits),
+               (execDir > 0 ? "BUY" : "SELL")));
+      ExecuteEntry(execDir);
+      return;
    }
-   if (htfBias > 0 && ssl > 0) {
-      if (bar1L < ssl && bar1C > ssl) {
-         gSt.stage          = STAGE_SWEPT;
-         gSt.direction      = +1;
-         gSt.sweptLevel     = ssl;
-         gSt.sweepWickPeak  = bar1L;
-         gSt.sweepBarTime   = iTime(_Symbol, InpSweepTF, 1);
-         LogSignal("[SWEEP-L] SSL @ " + DoubleToString(ssl, _Digits) +
-                   " wicked to " + DoubleToString(bar1L, _Digits) +
-                   ", M5 close " + DoubleToString(bar1C, _Digits));
+
+   // ---- "LONG-side" trigger (bias long + bar wicks down to EMA) ----
+   // v2.1 went long here. v2.2 with InpInvertDirection goes SHORT.
+   if (bias > 0 && bar2L > ema2 && bar1L <= ema1) {
+      if (InpRequireRejectionClose && bar1C <= ema1) {
+         LogDebug("[SKIP-L] No rejection close — bar1 closed below EMA");
+         return;
       }
+      int execDir = (InpInvertDirection ? -1 : +1);
+      LogSignal(StringFormat("[RETEST-L%s] L=%s C=%s EMA=%s → exec %s",
+               (InpInvertDirection ? "/INV" : ""),
+               DoubleToString(bar1L, _Digits),
+               DoubleToString(bar1C, _Digits),
+               DoubleToString(ema1, _Digits),
+               (execDir > 0 ? "BUY" : "SELL")));
+      ExecuteEntry(execDir);
    }
 }
 
-// STAGE 1: SWEPT — wait for CHoCH on M1
-void StageSwept() {
-   // Timeout: configurable M1 bars since sweep
-   int barsSince = iBarShift(_Symbol, InpEntryTF, gSt.sweepBarTime);
-   if (barsSince > InpSweepTimeoutBars) {
-      ResetSetup("SWEEP_TIMEOUT");
+//==================================================================
+//                       ENTRY EXECUTION
+//==================================================================
+
+void ExecuteEntry(int direction) {
+   double slDistPrice = InpSLPips * gPip;
+
+   long stopsLevelPts = SymbolInfoInteger(_Symbol, SYMBOL_TRADE_STOPS_LEVEL);
+   double stopsLevelPrice = (double)stopsLevelPts * _Point;
+   if (slDistPrice < stopsLevelPrice + _Point) {
+      slDistPrice = stopsLevelPrice + _Point;
+      LogDebug("SL distance clamped to broker stops level: " + DoubleToString(slDistPrice, _Digits));
+   }
+
+   double lots = CalcLotsForDollarRisk(slDistPrice, InpStopLossDollars);
+   if (lots <= 0) {
+      LogError("Lot calc failed for SL distance " + DoubleToString(slDistPrice, _Digits));
       return;
    }
 
-   // Invalidation
-   double bar1C = iClose(_Symbol, InpEntryTF, 1);
-   if (gSt.direction < 0 && bar1C > gSt.sweepWickPeak) {
-      ResetSetup("SWEEP_INVALIDATED");
-      return;
-   }
-   if (gSt.direction > 0 && bar1C < gSt.sweepWickPeak) {
-      ResetSetup("SWEEP_INVALIDATED");
-      return;
-   }
+   double tpDistPrice = slDistPrice * (InpTakeProfitDollars / InpStopLossDollars);
 
-   // Find recent M1 swing low/high BEFORE the sweep bar (mapped to entry TF index)
-   int sweepEntryIdx = iBarShift(_Symbol, InpEntryTF, gSt.sweepBarTime);
-   double chochLevel = FindRecentSwing(gSt.direction, sweepEntryIdx);
-   if (chochLevel <= 0) return;
-
-   if (gSt.direction < 0 && bar1C < chochLevel) {
-      gSt.stage         = STAGE_CHOCH;
-      gSt.chochSwing    = chochLevel;
-      gSt.chochBarTime  = iTime(_Symbol, InpEntryTF, 1);
-      LogSignal("[CHoCH-S] M1 close " + DoubleToString(bar1C, _Digits) +
-                " < swing " + DoubleToString(chochLevel, _Digits));
-   }
-   else if (gSt.direction > 0 && bar1C > chochLevel) {
-      gSt.stage         = STAGE_CHOCH;
-      gSt.chochSwing    = chochLevel;
-      gSt.chochBarTime  = iTime(_Symbol, InpEntryTF, 1);
-      LogSignal("[CHoCH-L] M1 close " + DoubleToString(bar1C, _Digits) +
-                " > swing " + DoubleToString(chochLevel, _Digits));
-   }
-}
-
-// STAGE 2: CHoCH — find M1 OB, validate RR, place limit, then RESET to IDLE
-//                  (so next bar can hunt new setups while limit is pending)
-void StageChoch() {
-   // Position cap check
-   int activeCount = CountActiveAuroraOrders();
-   if (activeCount >= InpMaxPositions) {
-      LogDebug("Skip placement: " + IntegerToString(activeCount) + " active orders >= max " + IntegerToString(InpMaxPositions));
-      ResetSetup("MAX_POSITIONS_REACHED");
-      return;
-   }
-
-   int chochIdx = iBarShift(_Symbol, InpEntryTF, gSt.chochBarTime);
-   double obTop = 0, obBot = 0;
-   if (!FindOB(gSt.direction, chochIdx, obTop, obBot)) {
-      ResetSetup("NO_OB_FOUND");
-      return;
-   }
-   gSt.obTop = obTop;
-   gSt.obBot = obBot;
-
-   double targetLiq = FindOpposingLiquidity(gSt.direction, gSt.sweptLevel);
-   if (targetLiq <= 0) {
-      ResetSetup("NO_TARGET_LIQUIDITY");
-      return;
-   }
-   gSt.targetLiq = targetLiq;
+   double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
 
    double entry, sl, tp;
-   if (gSt.direction < 0) {
-      entry = obTop;
-      sl    = gSt.sweepWickPeak + InpSLBufferPips * gPip;
-      tp    = targetLiq;
-   } else {
-      entry = obBot;
-      sl    = gSt.sweepWickPeak - InpSLBufferPips * gPip;
-      tp    = targetLiq;
-   }
-
-   double risk = MathAbs(entry - sl);
-   double reward = MathAbs(tp - entry);
-   double rr = (risk > 0) ? reward / risk : 0;
-   if (rr < InpRRMin) {
-      LogSignal("[RR_FAIL] RR " + DoubleToString(rr, 2) + " < " + DoubleToString(InpRRMin, 1));
-      ResetSetup("RR_TOO_LOW");
-      return;
-   }
-
-   double lots = CalcLotSize(risk);
-   if (lots <= 0) {
-      ResetSetup("LOT_CALC_FAILED");
-      return;
-   }
-
-   // Set order expiry time so MT5 auto-cancels if no fill
-   datetime expireTime = TimeCurrent() + InpLimitExpireBars * PeriodSeconds(InpEntryTF);
-
    bool ok;
-   if (gSt.direction < 0) {
-      ok = gTrade.SellLimit(lots, entry, _Symbol, sl, tp, ORDER_TIME_SPECIFIED, expireTime, InpComment);
+   if (direction < 0) {
+      entry = bid;
+      sl    = NormalizeDouble(entry + slDistPrice, _Digits);
+      tp    = NormalizeDouble(entry - tpDistPrice, _Digits);
+      ok    = gTrade.Sell(lots, _Symbol, entry, sl, tp, InpComment);
    } else {
-      ok = gTrade.BuyLimit(lots, entry, _Symbol, sl, tp, ORDER_TIME_SPECIFIED, expireTime, InpComment);
+      entry = ask;
+      sl    = NormalizeDouble(entry - slDistPrice, _Digits);
+      tp    = NormalizeDouble(entry + tpDistPrice, _Digits);
+      ok    = gTrade.Buy(lots, _Symbol, entry, sl, tp, InpComment);
    }
 
    if (!ok) {
       LogError("Order placement failed: " + gTrade.ResultRetcodeDescription());
-      ResetSetup("ORDER_FAILED");
       return;
    }
 
-   ulong ticket = gTrade.ResultOrder();
-   LogSignal(StringFormat("[LIMIT %s] #%I64u %.2f lots @ %s · SL %s · TP %s · RR %.2f",
-            (gSt.direction < 0 ? "SELL" : "BUY"),
-            ticket,
+   gLastFillBar = iTime(_Symbol, InpEntryTF, 0);
+
+   LogSignal(StringFormat("[%s] #%I64u %.2f lots @ %s · SL %s (-$%.2f) · TP %s (+$%.2f)",
+            (direction < 0 ? "SELL" : "BUY"),
+            gTrade.ResultOrder(),
             lots,
             DoubleToString(entry, _Digits),
-            DoubleToString(sl, _Digits),
-            DoubleToString(tp, _Digits),
-            rr));
-
-   // RESET IMMEDIATELY so next M1 bar can hunt fresh setups
-   ResetSetup("LIMIT_PLACED_RESET");
+            DoubleToString(sl, _Digits), InpStopLossDollars,
+            DoubleToString(tp, _Digits), InpTakeProfitDollars));
 }
 
 //==================================================================
-//                       STRUCTURE DETECTION
+//                       INDICATORS / BIAS
 //==================================================================
 
 int GetHTFBias() {
@@ -376,150 +324,51 @@ int GetHTFBias() {
    int hhIdx = -1, llIdx = -1;
    for (int i = 1; i <= bars; i++) {
       double h = iHigh(_Symbol, InpBiasTF, i);
-      double l = iLow(_Symbol, InpBiasTF, i);
+      double l = iLow (_Symbol, InpBiasTF, i);
       if (h > hh) { hh = h; hhIdx = i; }
       if (l < ll) { ll = l; llIdx = i; }
    }
-   if (llIdx < hhIdx) return -1;
-   if (hhIdx < llIdx) return +1;
+   if (llIdx < hhIdx) return -1;  // low more recent → bearish
+   if (hhIdx < llIdx) return +1;  // high more recent → bullish
    return 0;
 }
 
-void FindLiquidityPools(int lookback, double &bsl, datetime &bslTime, double &ssl, datetime &sslTime) {
-   bsl = 0; ssl = 0; bslTime = 0; sslTime = 0;
-   double tol = InpEqualHighTolPips * gPip;
-   if (Bars(_Symbol, InpSweepTF) < lookback + 2) return;
-
-   double swingHighs[], swingLows[];
-   datetime swingHighsT[], swingLowsT[];
-   ArrayResize(swingHighs, 0);
-   ArrayResize(swingLows, 0);
-   ArrayResize(swingHighsT, 0);
-   ArrayResize(swingLowsT, 0);
-
-   int sl = InpSwingLookback;
-   for (int i = sl + 1; i <= lookback - sl; i++) {
-      double h = iHigh(_Symbol, InpSweepTF, i);
-      double l = iLow(_Symbol, InpSweepTF, i);
-      bool isSwingHigh = true, isSwingLow = true;
-      for (int k = 1; k <= sl; k++) {
-         if (iHigh(_Symbol, InpSweepTF, i - k) >= h || iHigh(_Symbol, InpSweepTF, i + k) >= h) isSwingHigh = false;
-         if (iLow(_Symbol, InpSweepTF, i - k) <= l  || iLow(_Symbol, InpSweepTF, i + k) <= l)  isSwingLow  = false;
-      }
-      if (isSwingHigh) {
-         int s = ArraySize(swingHighs);
-         ArrayResize(swingHighs, s + 1); ArrayResize(swingHighsT, s + 1);
-         swingHighs[s] = h; swingHighsT[s] = iTime(_Symbol, InpSweepTF, i);
-      }
-      if (isSwingLow) {
-         int s = ArraySize(swingLows);
-         ArrayResize(swingLows, s + 1); ArrayResize(swingLowsT, s + 1);
-         swingLows[s] = l; swingLowsT[s] = iTime(_Symbol, InpSweepTF, i);
-      }
+bool GetEMAValue(int handle, int shift, double &val) {
+   double buf[];
+   if (CopyBuffer(handle, 0, shift, 1, buf) < 1) {
+      LogError("CopyBuffer EMA failed at shift " + IntegerToString(shift));
+      return false;
    }
-
-   if (InpRequireEqualHighs) {
-      // STRICT mode (v1 original): prefer clustered equal-highs / equal-lows.
-      // If no cluster found, fall back to the HIGHEST swing high / LOWEST swing low
-      // in the lookback window (still a structurally meaningful level).
-      for (int i = 0; i < ArraySize(swingHighs); i++) {
-         for (int j = i + 1; j < ArraySize(swingHighs); j++) {
-            if (MathAbs(swingHighs[i] - swingHighs[j]) <= tol) {
-               double avg = (swingHighs[i] + swingHighs[j]) / 2.0;
-               if (avg > bsl) { bsl = avg; bslTime = swingHighsT[i]; }
-               break;
-            }
-         }
-      }
-      for (int i = 0; i < ArraySize(swingLows); i++) {
-         for (int j = i + 1; j < ArraySize(swingLows); j++) {
-            if (MathAbs(swingLows[i] - swingLows[j]) <= tol) {
-               double avg = (swingLows[i] + swingLows[j]) / 2.0;
-               if (ssl <= 0 || avg < ssl) { ssl = avg; sslTime = swingLowsT[i]; }
-               break;
-            }
-         }
-      }
-      // Strict-mode fallback: highest swing high / lowest swing low
-      if (bsl <= 0 && ArraySize(swingHighs) > 0) {
-         int idx = ArrayMaximum(swingHighs);
-         bsl = swingHighs[idx]; bslTime = swingHighsT[idx];
-      }
-      if (ssl <= 0 && ArraySize(swingLows) > 0) {
-         int idx = ArrayMinimum(swingLows);
-         ssl = swingLows[idx]; sslTime = swingLowsT[idx];
-      }
-   } else {
-      // LOOSE mode (not recommended; documented in case user wants to experiment):
-      // use the MOST RECENT swing high/low as the pool, regardless of clustering.
-      // Backtest showed this drops win rate dramatically — use only with caution.
-      if (ArraySize(swingHighs) > 0) {
-         bsl = swingHighs[0]; bslTime = swingHighsT[0];
-      }
-      if (ArraySize(swingLows) > 0) {
-         ssl = swingLows[0]; sslTime = swingLowsT[0];
-      }
-   }
+   val = buf[0];
+   return true;
 }
 
-double FindRecentSwing(int direction, int afterIdx) {
-   int sl = InpSwingLookback;
-   for (int i = afterIdx + 1; i < afterIdx + 30; i++) {
-      if (i + sl >= Bars(_Symbol, InpEntryTF)) break;
-      bool isSwing = true;
-      double level = (direction < 0) ? iLow(_Symbol, InpEntryTF, i) : iHigh(_Symbol, InpEntryTF, i);
-      for (int k = 1; k <= sl; k++) {
-         if (direction < 0) {
-            if (iLow(_Symbol, InpEntryTF, i - k) <= level || iLow(_Symbol, InpEntryTF, i + k) <= level) isSwing = false;
-         } else {
-            if (iHigh(_Symbol, InpEntryTF, i - k) >= level || iHigh(_Symbol, InpEntryTF, i + k) >= level) isSwing = false;
-         }
-      }
-      if (isSwing) return level;
-   }
-   return 0;
-}
-
-bool FindOB(int direction, int chochIdx, double &obTop, double &obBot) {
-   for (int i = chochIdx; i < chochIdx + 8; i++) {
-      double o = iOpen(_Symbol, InpEntryTF, i);
-      double c = iClose(_Symbol, InpEntryTF, i);
-      bool isOpposing = (direction < 0) ? (c > o) : (c < o);
-      if (isOpposing) {
-         obTop = iHigh(_Symbol, InpEntryTF, i);
-         obBot = iLow(_Symbol, InpEntryTF, i);
-         return true;
-      }
-   }
-   return false;
-}
-
-double FindOpposingLiquidity(int direction, double swept) {
-   double bsl = 0, ssl = 0;
-   datetime t1 = 0, t2 = 0;
-   FindLiquidityPools(InpStructureBars * 2, bsl, t1, ssl, t2);
-   if (direction < 0) return ssl;
-   return bsl;
+// Returns -1 (down), 0 (flat), +1 (up) based on EMA value at bar 1 vs bar lookbackBars
+int GetEMASlope(int handle, int lookbackBars) {
+   double now, then;
+   if (!GetEMAValue(handle, 1, now)) return 0;
+   if (!GetEMAValue(handle, lookbackBars + 1, then)) return 0;
+   double diff = now - then;
+   if (MathAbs(diff) < _Point) return 0;
+   return (diff > 0) ? +1 : -1;
 }
 
 //==================================================================
 //                       RISK / POSITION SIZING
 //==================================================================
 
-double CalcLotSize(double slDistancePrice) {
-   if (slDistancePrice <= 0) return 0;
-   double balance = AccountInfoDouble(ACCOUNT_BALANCE);
-   double riskMoney = balance * (InpRiskPercent / 100.0);
+double CalcLotsForDollarRisk(double slDistancePrice, double riskDollars) {
+   if (slDistancePrice <= 0 || riskDollars <= 0) return 0;
 
    double tickValue = SymbolInfoDouble(_Symbol, SYMBOL_TRADE_TICK_VALUE);
    double tickSize  = SymbolInfoDouble(_Symbol, SYMBOL_TRADE_TICK_SIZE);
    if (tickValue <= 0 || tickSize <= 0) return 0;
 
-   double slTicks = slDistancePrice / tickSize;
+   double slTicks    = slDistancePrice / tickSize;
    double moneyPerLot = slTicks * tickValue;
    if (moneyPerLot <= 0) return 0;
 
-   double lots = riskMoney / moneyPerLot;
+   double lots = riskDollars / moneyPerLot;
 
    double lotMin  = SymbolInfoDouble(_Symbol, SYMBOL_VOLUME_MIN);
    double lotMax  = SymbolInfoDouble(_Symbol, SYMBOL_VOLUME_MAX);
@@ -545,44 +394,6 @@ int CountActiveAuroraOrders() {
       if (gOrd.Magic() == InpMagic && gOrd.Symbol() == _Symbol) n++;
    }
    return n;
-}
-
-//==================================================================
-//                       POSITION MANAGEMENT
-//==================================================================
-
-void ManageOpenPositions() {
-   for (int i = PositionsTotal() - 1; i >= 0; i--) {
-      if (!gPos.SelectByIndex(i)) continue;
-      if (gPos.Magic() != InpMagic) continue;
-      if (gPos.Symbol() != _Symbol) continue;
-      if (InpMoveBE_at1R) MoveToBE(gPos.Ticket());
-   }
-}
-
-void MoveToBE(ulong ticket) {
-   if (!gPos.SelectByTicket(ticket)) return;
-   double entry  = gPos.PriceOpen();
-   double sl     = gPos.StopLoss();
-   double tp     = gPos.TakeProfit();
-   double curBid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   double curAsk = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-   double risk   = MathAbs(entry - sl);
-   if (risk <= 0) return;
-
-   bool isLong = (gPos.PositionType() == POSITION_TYPE_BUY);
-   double oneR = isLong ? (entry + risk) : (entry - risk);
-
-   if (isLong && sl >= entry) return;
-   if (!isLong && sl <= entry) return;
-
-   bool trigger = isLong ? (curBid >= oneR) : (curAsk <= oneR);
-   if (trigger) {
-      double newSL = NormalizeDouble(entry, _Digits);
-      if (gTrade.PositionModify(ticket, newSL, tp)) {
-         LogSignal("[BE] Pos " + IntegerToString((long)ticket) + " SL→BE");
-      }
-   }
 }
 
 //==================================================================
@@ -620,12 +431,10 @@ void UpdateDailyCounters() {
       LogInfo("--- New trading day: " + TimeToString(today, TIME_DATE) + " ---");
    }
 
-   // Count today's filled trades + circuit breaker
    HistorySelect(gTodayKey, TimeCurrent());
    int total = HistoryDealsTotal();
    int filled = 0, consec = 0;
-   bool breakLoop = false;
-   for (int i = 0; i < total && !breakLoop; i++) {
+   for (int i = 0; i < total; i++) {
       ulong ticket = HistoryDealGetTicket(i);
       if (ticket == 0) continue;
       if (HistoryDealGetInteger(ticket, DEAL_MAGIC) != InpMagic) continue;
@@ -678,21 +487,3 @@ void LogInfo(string m)   { Print("[INFO] ",   m); LogToFile("INFO",   m); }
 void LogDebug(string m)  { LogToFile("DEBUG",  m); }
 void LogSignal(string m) { Print("[SIG] ",    m); LogToFile("SIGNAL", m); }
 void LogError(string m)  { Print("[ERR] ",    m); LogToFile("ERROR",  m); }
-
-//==================================================================
-//                       UTILITY
-//==================================================================
-
-void ResetSetup(string reason) {
-   if (gSt.stage != STAGE_IDLE) LogDebug("RESET: " + reason);
-   gSt.stage         = STAGE_IDLE;
-   gSt.direction     = 0;
-   gSt.sweptLevel    = 0;
-   gSt.sweepWickPeak = 0;
-   gSt.chochSwing    = 0;
-   gSt.obTop         = 0;
-   gSt.obBot         = 0;
-   gSt.targetLiq     = 0;
-   gSt.sweepBarTime  = 0;
-   gSt.chochBarTime  = 0;
-}

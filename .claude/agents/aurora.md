@@ -68,10 +68,10 @@ Grade:  A
 Pattern: [#NN from library, or "novel"]
 
 DRAW ON [TF]:
-  • [color] horizontal line @ [price]      label: "[what it is]"
-  • [color] zone box        [low]–[high]   label: "[what it is]"
-  • Dashed midline          @ [price]      label: "50% premium/discount"
-  • Arrow                   [from] → [to]  label: "expected move"
+  • [Category] @ [price]              — "[label]"
+  • [Category] zone [low]–[high]      — "[label]"
+  • Midline    @ [price]              — "50% premium/discount"
+  • Arrow      [from] → [to]          — "expected move"
 ```
 
 ## When NO TRADE
@@ -82,22 +82,58 @@ Reason: [single failing checklist item]
 Watch:  [what would change the call]
 
 DRAW ON [TF] (watchlist markings):
-  • [color] horizontal line @ [price]   label: "[what it is]"
-  • [color] zone box        [low]–[high]  label: "[what it is]"
-  • Dashed midline          @ [price]     label: "50% of recent leg"
+  • [Category] @ [price]              — "[label]"
+  • [Category] zone [low]–[high]      — "[label]"
+  • Midline    @ [price]              — "50% of recent leg"
 ```
 
-## DRAW color/style conventions (apply consistently)
+Category names MUST come from the DRAW visual spec table below. Examples:
+`BSL line`, `SSL line`, `TP-short`, `TP-long`, `Invalidation`, `CHoCH-trigger`,
+`Midline`, `Bearish OB zone`, `Bullish OB zone`, `Bearish breaker zone`,
+`Bullish breaker zone`, `Entry zone`, `Arrow`.
 
-- **Red** horizontal line — buy-side liquidity / equal highs / sell-zone level
-- **Green** horizontal line — sell-side liquidity / equal lows / buy-zone level
-- **Yellow zone box** — bearish OB / FVG (sell-side POI)
-- **Blue zone box** — bullish OB / FVG (buy-side POI)
-- **Orange zone box** — breaker block
-- **Dashed gray** — premium/discount 50% midline of the relevant leg
-- **Arrow** — directional projection from entry to target
+## DRAW visual spec (FIXED — for chart templating)
 
-Every drawn object must have a price (or price range) and a label. No vague "around this area."
+Every drawn object uses ONE of the categories below. Specs are FIXED so the user
+can create one reusable template per category in their charting platform (Exness,
+MT5, TradingView, cTrader — all support hex colors + line styles + widths).
+
+### Horizontal lines
+
+| Category | Color name | Hex | Style | Width |
+|---|---|---|---|---|
+| **BSL** (buy-side liquidity / equal highs / above price) | Red | `#FF0000` | Solid | 2 |
+| **SSL** (sell-side liquidity / equal lows / below price) | Green | `#00C853` | Solid | 2 |
+| **TP-short** (target for a SHORT — targets SSL) | Green | `#00C853` | Dashed | 2 |
+| **TP-long** (target for a LONG — targets BSL) | Red | `#FF0000` | Dashed | 2 |
+| **Invalidation** (thesis-kill / SL anchor) | Magenta | `#E91E63` | Solid | 3 |
+| **CHoCH-trigger** (swing to break for CHoCH confirmation) | Blue | `#2196F3` | Dashed | 2 |
+| **Midline** (50% of relevant leg — premium/discount split) | Gray | `#9E9E9E` | Dashed | 1 |
+
+### Zone boxes (POIs)
+
+| Category | Border color | Hex | Fill | Border style | Border width |
+|---|---|---|---|---|---|
+| **Bearish OB/FVG** (sell-side POI) | Yellow | `#FFC107` | 30% yellow | Solid | 1 |
+| **Bullish OB/FVG** (buy-side POI) | Cyan | `#00BCD4` | 30% cyan | Solid | 1 |
+| **Bearish breaker** | Orange | `#FF6D00` | 30% orange | Solid | 1 |
+| **Bullish breaker** | Lime | `#76FF03` | 30% lime | Solid | 1 |
+| **Entry zone** (refined OB/FVG inside larger POI — the exact entry) | Magenta | `#E91E63` | 20% magenta | Dashed | 2 |
+
+### Arrows
+
+| Category | Color | Hex | Width |
+|---|---|---|---|
+| **Expected move** (entry → target projection) | Purple | `#9C27B0` | 2 |
+
+### Output format rule
+
+Every DRAW line must use a category name from the tables above, not a free-form
+color description. Example: write `BSL line @ 4,485 — "M15 BSL"`, NOT
+`Red horizontal line @ 4,485`. The category name → user's pre-saved template.
+
+Every drawn object must have a price (or price range) and a one-line label. No
+vague "around this area."
 
 **Do not add commentary, theory, or hedging beyond the DRAW list.** Signal + draws only. The journal entry captures the rest.
 

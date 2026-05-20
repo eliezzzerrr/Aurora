@@ -8,7 +8,7 @@ All entries below are demo-account trades. We graduate to live capital only when
 
 ## Running stats
 
-- **Total analyses:** 13
+- **Total analyses:** 14
 - **Signaled trades:** 0
 - **Wins:** 0  ·  **Losses:** 0  ·  **BE:** 0  ·  **Pending:** 0
 - **Win rate:** —
@@ -209,6 +209,23 @@ All entries below are demo-account trades. We graduate to live capital only when
 - Outcome: N/A
 - R: —
 - Notes: BREAKTHROUGH CANDLE — after 11 prior NO-TRADE analyses today, we finally have a confirmed sweep. The 5:30 PM 15m closed at 4,540.892 (the candle's low), clean rejection from the BSL with NO intra-candle recovery. This is qualitatively different from all prior chop. User added a new brown/red refined-OB zone around 4,557-4,562 ✓ (good — that's the precise sweep wick top). User's "15m CHoCH trigger" line still at 4,508 is wrong — actual level is ~4,525 (most recent meaningful 15m swing low). Two scenarios for next 30 min: (A) bears continue, 5:45 or 6:00 PM 15m closes < 4,525 = CHoCH confirmed = A-grade short entry on retest of ~4,547-4,550 with SL ~4,560 and TP 4,481 (~5:1 RR); (B) bears can't push further, setup consolidates 4,535-4,545 into London close, carries to NY (8:30 PM PHT) as a B+ setup. Either way, the structural picture is BEARISH and validated. KEY LESSON: 11 analyses of patience were necessary to get to this point. The traders who shorted at 3:50 PM impulse (#0008) are now finally in the money but with much worse entries than the eventual disciplined entry will give. Next 15m close: 5:45 PM PHT. This is the most important candle of the day.
+
+## #0014 · 2026-05-20 15:32 PHT · NO-TRADE
+
+- Phase: DEMO
+- Chart TFs observed: 5m / 15m / 1H / 4H (full multi-TF stack via transcription)
+- HTF bias: 4H bearish (clean downtrend from ~4,780 peak May 12 → ~4,455 low May 19; lower highs / lower lows intact); 1H bearish (peak ~4,590 May 19, hard drop to 4,455, no reversal structure); 15m bearish (EMA50 & EMA200 both above price)
+- Liquidity swept: NOT YET — price currently at the upper edge of M15 4,470–4,485 range, testing 4,485 BSL (cluster of equal M15 highs + Asian range high). No clear sweep wick has printed. M15 SSL at 4,455 was taken late on May 19 (already in the rearview)
+- POI: Potential 1H bearish OB ~4,495–4,515 ABOVE current price (above the last meaningful 1H swing high before final breakdown leg). Refined 15m bearish OB pending the sweep candle itself. NOTE: there is no in-play POI right now — price is at the swing-low edge of the range, not inside any short-side POI
+- Confirmation: NONE. No 15m sweep close above 4,485 with rejection. No 15m CHoCH (no recent 15m higher-swing structure to break against)
+- Entry / SL / TP: N/A / N/A / N/A · RR N/A
+- Session: London (3:32 PM PHT) ✅ — 32 min into killzone, 2h 28min remaining
+- Grade: B (B-watchlist — 6/8 pass cleanly: #1 bias ✓, #5 zone (premium would be above 4,470 midline of 4,455–4,485 range) ✓, #6 SL placement viable ✓, #7 TP geometry strong (next clean SSL is the 4,455 low; deeper draw at 4,440 / 4,415 / 4,400 round-number psychology) ✓, #8 session ✓, #4 POI identifiable in 1H ✓. Fails #2 (no sweep) and #3 (no CHoCH). One sweep candle + one CHoCH candle away from A-grade short.)
+- Pattern match: "London sweep + 15m CHoCH" archetype (14th observation of this setup family) — pre-trigger phase
+- Outcome: N/A
+- R: —
+- Reason: Gate fail — #2 (no liquidity sweep confirmed) AND #3 (no 15m CHoCH after sweep). Setup forming, not triggered.
+- Notes: STRUCTURE PRIMED, TRIGGER ABSENT. Bias confluence is the cleanest we've ever logged — 4H bear, 1H bear, M15 bear, M15 EMAs aligned. Asian range tight (4,455–4,485, ~30pt) and price is at ARH right now. This is textbook ARLS pre-trigger geometry: bearish HTF + Asia equal highs + we just opened London. The play: wait for 15m to wick CLEAN above 4,485 (ideally 4,488–4,495 to grab buy stops just above the cluster) and CLOSE back below 4,485 with a body in the lower third of the candle. Then watch for the next 15m to close below the recent M15 swing low (~4,470 area — needs precise mark on user's chart) for CHoCH. Entry on the retest of the 15m bearish OB created by the sweep candle, SL 3–5 pips above sweep wick high (~4,498), TP at 4,455 SSL first, runner to 4,440. From a 5pt risk that is a clean ≥5R geometry. WATCH ALSO FOR FAILURE MODE: if 15m closes above 4,495 with conviction and reclaims the most recent 1H swing high at 4,515, bearish thesis weakens significantly — at that point the call becomes NO-TRADE-no-bias until structure rebuilds. London peak volatility window is 3:00–4:30 PM PHT — if no sweep prints in next 6 candles, probability declines, carry forward to NY 8:30 PM. User asked the right question at the right time: do not enter at current price (4,480) chasing the range — wait for the sweep wick above 4,485.
 
 ## #0013 · 2026-05-18 23:48 PHT · NO-TRADE — END-OF-DAY DEBRIEF
 

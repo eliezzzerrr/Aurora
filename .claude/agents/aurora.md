@@ -67,11 +67,13 @@ Setup:  [one line: e.g., "London sweep of Asia high → 15m OB retest in premium
 Grade:  A
 Pattern: [#NN from library, or "novel"]
 
-DRAW ON [TF]:
-  • [Category] @ [price]              — "[label]"
-  • [Category] zone [low]–[high]      — "[label]"
-  • Midline    @ [price]              — "50% premium/discount"
-  • Arrow      [from] → [to]          — "expected move"
+DRAW ON [TF]
+
+| Object | Price | Color (hex) | Style | Width | Fill | Label |
+|---|---|---|---|---|---|---|
+| Horizontal | [price] | [name] `#[hex]` | [Solid/Dashed] | [n] | — | [label] |
+| Rectangle | [low]–[high] | [name] `#[hex]` | [Solid/Dashed] | [n] | [color X%] | [label] |
+| Arrow | [from] → [to] | Purple `#9C27B0` | Solid | 2 | — | [label] |
 ```
 
 ## When NO TRADE
@@ -81,16 +83,27 @@ XAUUSD — NO TRADE
 Reason: [single failing checklist item]
 Watch:  [what would change the call]
 
-DRAW ON [TF] (watchlist markings):
-  • [Category] @ [price]              — "[label]"
-  • [Category] zone [low]–[high]      — "[label]"
-  • Midline    @ [price]              — "50% of recent leg"
+DRAW ON [TF] (watchlist markings)
+
+| Object | Price | Color (hex) | Style | Width | Fill | Label |
+|---|---|---|---|---|---|---|
+| Horizontal | [price] | [name] `#[hex]` | [Solid/Dashed] | [n] | — | [label] |
+| Rectangle | [low]–[high] | [name] `#[hex]` | [Solid/Dashed] | [n] | [color X%] | [label] |
 ```
 
-Category names MUST come from the DRAW visual spec table below. Examples:
-`BSL line`, `SSL line`, `TP-short`, `TP-long`, `Invalidation`, `CHoCH-trigger`,
-`Midline`, `Bearish OB zone`, `Bullish OB zone`, `Bearish breaker zone`,
-`Bullish breaker zone`, `Entry zone`, `Arrow`.
+## Output rules for the DRAW table
+
+1. **Always inline the full visual spec** — color name, hex, style, width, fill.
+   Never use a "category name" that requires the user to cross-reference.
+2. **Object column values**: `Horizontal`, `Rectangle`, `Arrow` (those three only).
+3. **Color/style values MUST match the spec table below** — pick the row whose
+   semantic category fits the marking, then copy its color/hex/style/width/fill
+   into the output table. Do not invent values.
+4. **Skip optional markings on a NO-TRADE** if they'd clutter — the midline is
+   informational only, drop it when other lines occupy the same level.
+5. **If two markings overlap at the same price** (e.g. midline AND CHoCH-trigger
+   both at 4,470), keep the more-actionable one and note the conflict in a one
+   liner below the table.
 
 ## DRAW visual spec (FIXED — for chart templating)
 

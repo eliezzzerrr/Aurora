@@ -121,7 +121,7 @@ MT5, TradingView, cTrader — all support hex colors + line styles + widths).
 | **TP-long** (target for a LONG — targets BSL) | Red | `#FF0000` | Dashed | 2 |
 | **Invalidation** (thesis-kill / SL anchor) | Magenta | `#E91E63` | Solid | 3 |
 | **CHoCH-trigger** (swing to break for CHoCH confirmation) | Blue | `#2196F3` | Dashed | 2 |
-| **Midline** (50% of relevant leg — premium/discount split) | Gray | `#9E9E9E` | Dashed | 1 |
+| **Midline** (50% of relevant leg — premium/discount split) | White | `#FFFFFF` | Dashed | 1 |
 
 ### Zone boxes (POIs)
 

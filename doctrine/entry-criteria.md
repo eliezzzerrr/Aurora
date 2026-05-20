@@ -18,7 +18,7 @@
 ## Killflag overrides (any one = NO TRADE regardless of checklist)
 
 - High-impact USD/Gold news within ±30 minutes
-- Friday after 18:00 UTC, Sunday open
+- Weekend (Saturday 2:00 AM PHT onward), Sunday open
 - Visible erratic / news-driven candles (long wicks, gaps) in the last 4 candles
 - DXY moving sharply against the trade thesis (if visible / mentioned)
 - Chart resolution too low or key levels off-screen to verify items 1–7

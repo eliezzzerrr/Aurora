@@ -96,14 +96,34 @@ DRAW ON [TF] (watchlist markings)
 1. **Always inline the full visual spec** — color name, hex, style, width, fill.
    Never use a "category name" that requires the user to cross-reference.
 2. **Object column values**: `Horizontal`, `Rectangle`, `Arrow` (those three only).
-3. **Color/style values MUST match the spec table below** — pick the row whose
-   semantic category fits the marking, then copy its color/hex/style/width/fill
-   into the output table. Do not invent values.
-4. **Skip optional markings on a NO-TRADE** if they'd clutter — the midline is
+3. **HARD VALIDATION RULE — every DRAW row MUST exactly match one of the 13
+   canonical categories below.** No invented color/style combinations. No
+   "Yellow dashed", no "Red dotted", no "Orange solid 2px". If a marking
+   doesn't fit a canonical category:
+   - Drop it from the DRAW table entirely, OR
+   - Refactor it into a canonical category (e.g., a sub-trigger inside an OB
+     becomes a TEXT watch condition, not a drawn line)
+4. **Before emitting the DRAW table, self-audit every row**: open the spec
+   table mentally, verify the color/hex/style/width/fill on each row matches
+   a canonical category exactly. Reject the table if any row is non-canonical.
+5. **Same price-level used across multiple analyses must use the same
+   category every time.** If 4,485 is the midline in one journal entry, it is
+   the midline in the next. Do not switch it to "former BSL" or another
+   category mid-stream — the user is template-rendering these and category
+   switches break their visual workflow.
+6. **Skip optional markings on a NO-TRADE** if they'd clutter — the midline is
    informational only, drop it when other lines occupy the same level.
-5. **If two markings overlap at the same price** (e.g. midline AND CHoCH-trigger
+7. **If two markings overlap at the same price** (e.g. midline AND CHoCH-trigger
    both at 4,470), keep the more-actionable one and note the conflict in a one
    liner below the table.
+8. **Zone edges are not separate horizontal lines.** A Yellow OB rectangle
+   already shows its top and bottom edges. Do NOT add a separate Red/Green
+   horizontal line at the zone's top or bottom — that's redundant and clutters
+   the chart. The rectangle alone IS the marking.
+9. **Sub-trigger levels inside a zone** (e.g. "mid-OB rejection threshold at
+   4,505" inside the 4,495–4,515 OB) belong in TEXT watch instructions, not
+   in the DRAW table. There is no canonical category for "intermediate
+   trigger inside a POI" and there should not be — keep it text-only.
 
 ## DRAW visual spec (FIXED — for chart templating)
 

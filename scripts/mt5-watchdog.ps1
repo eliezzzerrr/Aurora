@@ -32,8 +32,10 @@
 #>
 
 param(
-    [int]    $StallMinutes    = 2,
-    [int]    $CooldownMinutes = 10,
+    [int]    $StallMinutes     = 2,    # heartbeat file this old = EA is dead
+    [int]    $TickStallMinutes = 5,    # no ticks this long, market open = feed is dead
+    [int]    $CooldownMinutes  = 10,
+    [int]    $MaxConsecutive   = 3,    # give up after this many failed restarts
     [switch] $WhatIf
 )
 
@@ -44,6 +46,7 @@ $HeartbeatFile= Join-Path $TerminalDir 'MQL5\Files\TRENDEMA_HEARTBEAT.txt'
 $Mt5Exe       = 'C:\Program Files\MetaTrader 5\terminal64.exe'
 $LogFile      = Join-Path $PSScriptRoot 'watchdog.log'
 $StampFile    = Join-Path $PSScriptRoot '.last-restart'
+$FailFile     = Join-Path $PSScriptRoot '.consecutive-restarts'
 
 function Write-Log([string]$msg) {
     $line = "{0}  {1}" -f (Get-Date -Format 'yyyy-MM-dd HH:mm:ss'), $msg
@@ -65,20 +68,63 @@ if (-not (Test-Path $HeartbeatFile)) {
 }
 
 $age = (New-TimeSpan -Start (Get-Item $HeartbeatFile).LastWriteTime -End (Get-Date)).TotalMinutes
-if ($age -lt $StallMinutes) {
-    exit 0    # healthy; stay quiet so the log only records real events
+
+# --- Heartbeat format (EA v7.9+):  <local time>|<tick age s>|<market open 0/1>
+#     A fresh heartbeat only proves the EA is ALIVE, not that it is receiving
+#     data - it is written from OnTimer, which runs on the terminal clock.
+#     On 27 Aug the EA sat for nine hours with a perfectly current heartbeat
+#     and no ticks at all, so the tick age is the field that matters.
+$tickAge    = $null
+$marketOpen = $null
+try {
+    $parts = (Get-Content $HeartbeatFile -Raw).Trim() -split '\|'
+    if ($parts.Count -ge 3) {
+        $tickAge    = [int]$parts[1]
+        $marketOpen = [int]$parts[2]
+    }
+} catch { }
+
+$reason = $null
+
+if ($age -ge $StallMinutes) {
+    $reason = "heartbeat {0:N1} min old (threshold {1}) - EA not executing" -f $age, $StallMinutes
+}
+elseif ($null -ne $tickAge -and $marketOpen -eq 1 -and $tickAge -ge ($TickStallMinutes * 60)) {
+    $reason = "no ticks for {0:N1} min while the market is open - quote feed dead" -f ($tickAge / 60)
+}
+
+if (-not $reason) {
+    # healthy - clear the consecutive-failure counter and stay quiet
+    if (Test-Path $FailFile) { Remove-Item $FailFile -Force -ErrorAction SilentlyContinue }
+    exit 0
 }
 
 # --- do not thrash: one restart per cooldown window
 if (Test-Path $StampFile) {
     $since = (New-TimeSpan -Start (Get-Item $StampFile).LastWriteTime -End (Get-Date)).TotalMinutes
     if ($since -lt $CooldownMinutes) {
-        Write-Log ("Heartbeat stale {0:N1} min, but last restart was {1:N1} min ago - waiting out the cooldown." -f $age, $since)
+        Write-Log ("STALL ({0}), but last restart was {1:N1} min ago - waiting out the cooldown." -f $reason, $since)
         exit 0
     }
 }
 
-Write-Log ("STALL DETECTED: heartbeat {0:N1} min old (threshold {1})." -f $age, $StallMinutes)
+# --- Give up rather than loop. On 27 Aug this restarted MT5 38 times over
+#     seven hours: the attached EA version had been deleted from the Advisors
+#     folder, so no EA ever loaded, the heartbeat never refreshed, and every
+#     cycle looked like a fresh stall. Restarting cannot fix a problem that
+#     restarting does not fix.
+$fails = 0
+if (Test-Path $FailFile) { $fails = [int](Get-Content $FailFile -Raw).Trim() }
+
+if ($fails -ge $MaxConsecutive) {
+    Write-Log ("GIVING UP: {0} restarts in a row did not restore the heartbeat. " -f $fails +
+               "Restarting is not fixing this - check that the EA attached to the chart " +
+               "still exists in MQL5\Experts\Advisors, and that Algo Trading is on. " +
+               "Delete .consecutive-restarts to re-arm the watchdog.")
+    exit 0
+}
+
+Write-Log ("STALL DETECTED: {0}." -f $reason)
 
 if ($WhatIf) {
     Write-Log 'WhatIf: would restart MT5 now. No action taken.'
@@ -93,6 +139,7 @@ try {
     Write-Log 'Starting MT5 ...'
     Start-Process -FilePath $Mt5Exe
     Set-Content -Path $StampFile -Value (Get-Date -Format 'o')
+    Set-Content -Path $FailFile  -Value ([string]($fails + 1))
     Write-Log 'Restart issued. MT5 will reload the chart and the EA with its saved inputs.'
 }
 catch {

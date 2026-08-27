@@ -1,0 +1,337 @@
+2026-08-27 21:37:51  STALL DETECTED: heartbeat 2.8 min old (threshold 2) - EA not executing.
+2026-08-27 21:37:51  Stopping terminal64.exe ...
+2026-08-27 21:37:59  Starting MT5 ...
+2026-08-27 21:37:59  Restart issued. MT5 will reload the chart and the EA with its saved inputs.
+2026-08-27 21:39:51  STALL (heartbeat 4.8 min old (threshold 2) - EA not executing), but last restart was 1.9 min ago - waiting out the cooldown.
+2026-08-27 21:41:51  STALL (heartbeat 6.8 min old (threshold 2) - EA not executing), but last restart was 3.9 min ago - waiting out the cooldown.
+2026-08-27 21:43:50  STALL (heartbeat 8.8 min old (threshold 2) - EA not executing), but last restart was 5.8 min ago - waiting out the cooldown.
+2026-08-27 21:45:50  STALL (heartbeat 10.8 min old (threshold 2) - EA not executing), but last restart was 7.8 min ago - waiting out the cooldown.
+2026-08-27 21:47:50  STALL (heartbeat 12.8 min old (threshold 2) - EA not executing), but last restart was 9.8 min ago - waiting out the cooldown.
+2026-08-27 21:49:50  STALL DETECTED: heartbeat 14.8 min old (threshold 2) - EA not executing.
+2026-08-27 21:49:50  Stopping terminal64.exe ...
+2026-08-27 21:49:58  Starting MT5 ...
+2026-08-27 21:49:58  Restart issued. MT5 will reload the chart and the EA with its saved inputs.
+2026-08-27 21:51:50  STALL (heartbeat 16.8 min old (threshold 2) - EA not executing), but last restart was 1.9 min ago - waiting out the cooldown.
+2026-08-27 21:53:50  STALL (heartbeat 18.8 min old (threshold 2) - EA not executing), but last restart was 3.9 min ago - waiting out the cooldown.
+2026-08-27 21:55:50  STALL (heartbeat 20.8 min old (threshold 2) - EA not executing), but last restart was 5.9 min ago - waiting out the cooldown.
+2026-08-27 21:57:50  STALL (heartbeat 22.8 min old (threshold 2) - EA not executing), but last restart was 7.9 min ago - waiting out the cooldown.
+2026-08-27 21:59:50  STALL (heartbeat 24.8 min old (threshold 2) - EA not executing), but last restart was 9.9 min ago - waiting out the cooldown.
+2026-08-27 22:01:50  STALL DETECTED: heartbeat 26.8 min old (threshold 2) - EA not executing.
+2026-08-27 22:01:50  Stopping terminal64.exe ...
+2026-08-27 22:01:58  Starting MT5 ...
+2026-08-27 22:01:58  Restart issued. MT5 will reload the chart and the EA with its saved inputs.
+2026-08-27 22:03:50  STALL (heartbeat 28.8 min old (threshold 2) - EA not executing), but last restart was 1.9 min ago - waiting out the cooldown.
+2026-08-27 22:05:50  STALL (heartbeat 30.8 min old (threshold 2) - EA not executing), but last restart was 3.9 min ago - waiting out the cooldown.
+2026-08-27 22:07:50  STALL (heartbeat 32.8 min old (threshold 2) - EA not executing), but last restart was 5.9 min ago - waiting out the cooldown.
+2026-08-27 22:09:50  STALL (heartbeat 34.8 min old (threshold 2) - EA not executing), but last restart was 7.9 min ago - waiting out the cooldown.
+2026-08-27 22:11:50  STALL (heartbeat 36.8 min old (threshold 2) - EA not executing), but last restart was 9.9 min ago - waiting out the cooldown.
+2026-08-27 22:13:50  STALL DETECTED: heartbeat 38.8 min old (threshold 2) - EA not executing.
+2026-08-27 22:13:50  Stopping terminal64.exe ...
+2026-08-27 22:13:58  Starting MT5 ...
+2026-08-27 22:13:58  Restart issued. MT5 will reload the chart and the EA with its saved inputs.
+2026-08-27 22:15:50  STALL (heartbeat 40.8 min old (threshold 2) - EA not executing), but last restart was 1.9 min ago - waiting out the cooldown.
+2026-08-27 22:17:50  STALL (heartbeat 42.8 min old (threshold 2) - EA not executing), but last restart was 3.9 min ago - waiting out the cooldown.
+2026-08-27 22:19:50  STALL (heartbeat 44.8 min old (threshold 2) - EA not executing), but last restart was 5.9 min ago - waiting out the cooldown.
+2026-08-27 22:21:50  STALL (heartbeat 46.8 min old (threshold 2) - EA not executing), but last restart was 7.9 min ago - waiting out the cooldown.
+2026-08-27 22:23:50  STALL (heartbeat 48.8 min old (threshold 2) - EA not executing), but last restart was 9.9 min ago - waiting out the cooldown.
+2026-08-27 22:25:50  STALL DETECTED: heartbeat 50.8 min old (threshold 2) - EA not executing.
+2026-08-27 22:25:50  Stopping terminal64.exe ...
+2026-08-27 22:25:58  Starting MT5 ...
+2026-08-27 22:25:58  Restart issued. MT5 will reload the chart and the EA with its saved inputs.
+2026-08-27 22:27:50  STALL (heartbeat 52.8 min old (threshold 2) - EA not executing), but last restart was 1.9 min ago - waiting out the cooldown.
+2026-08-27 22:29:50  STALL (heartbeat 54.8 min old (threshold 2) - EA not executing), but last restart was 3.9 min ago - waiting out the cooldown.
+2026-08-27 22:31:50  STALL (heartbeat 56.8 min old (threshold 2) - EA not executing), but last restart was 5.9 min ago - waiting out the cooldown.
+2026-08-27 22:33:50  STALL (heartbeat 58.8 min old (threshold 2) - EA not executing), but last restart was 7.9 min ago - waiting out the cooldown.
+2026-08-27 22:35:50  STALL (heartbeat 60.8 min old (threshold 2) - EA not executing), but last restart was 9.9 min ago - waiting out the cooldown.
+2026-08-27 22:37:50  STALL DETECTED: heartbeat 62.8 min old (threshold 2) - EA not executing.
+2026-08-27 22:37:50  Stopping terminal64.exe ...
+2026-08-27 22:37:58  Starting MT5 ...
+2026-08-27 22:37:58  Restart issued. MT5 will reload the chart and the EA with its saved inputs.
+2026-08-27 22:39:50  STALL (heartbeat 64.8 min old (threshold 2) - EA not executing), but last restart was 1.9 min ago - waiting out the cooldown.
+2026-08-27 22:41:50  STALL (heartbeat 66.8 min old (threshold 2) - EA not executing), but last restart was 3.9 min ago - waiting out the cooldown.
+2026-08-27 22:43:50  STALL (heartbeat 68.8 min old (threshold 2) - EA not executing), but last restart was 5.9 min ago - waiting out the cooldown.
+2026-08-27 22:45:50  STALL (heartbeat 70.8 min old (threshold 2) - EA not executing), but last restart was 7.9 min ago - waiting out the cooldown.
+2026-08-27 22:47:50  STALL (heartbeat 72.8 min old (threshold 2) - EA not executing), but last restart was 9.9 min ago - waiting out the cooldown.
+2026-08-27 22:49:50  STALL DETECTED: heartbeat 74.8 min old (threshold 2) - EA not executing.
+2026-08-27 22:49:50  Stopping terminal64.exe ...
+2026-08-27 22:49:58  Starting MT5 ...
+2026-08-27 22:49:58  Restart issued. MT5 will reload the chart and the EA with its saved inputs.
+2026-08-27 22:51:50  STALL (heartbeat 76.8 min old (threshold 2) - EA not executing), but last restart was 1.9 min ago - waiting out the cooldown.
+2026-08-27 22:53:50  STALL (heartbeat 78.8 min old (threshold 2) - EA not executing), but last restart was 3.9 min ago - waiting out the cooldown.
+2026-08-27 22:55:50  STALL (heartbeat 80.8 min old (threshold 2) - EA not executing), but last restart was 5.9 min ago - waiting out the cooldown.
+2026-08-27 22:57:50  STALL (heartbeat 82.8 min old (threshold 2) - EA not executing), but last restart was 7.9 min ago - waiting out the cooldown.
+2026-08-27 22:59:50  STALL (heartbeat 84.8 min old (threshold 2) - EA not executing), but last restart was 9.9 min ago - waiting out the cooldown.
+2026-08-27 23:01:50  STALL DETECTED: heartbeat 86.8 min old (threshold 2) - EA not executing.
+2026-08-27 23:01:50  Stopping terminal64.exe ...
+2026-08-27 23:01:58  Starting MT5 ...
+2026-08-27 23:01:58  Restart issued. MT5 will reload the chart and the EA with its saved inputs.
+2026-08-27 23:03:50  STALL (heartbeat 88.8 min old (threshold 2) - EA not executing), but last restart was 1.9 min ago - waiting out the cooldown.
+2026-08-27 23:05:50  STALL (heartbeat 90.8 min old (threshold 2) - EA not executing), but last restart was 3.9 min ago - waiting out the cooldown.
+2026-08-27 23:07:50  STALL (heartbeat 92.8 min old (threshold 2) - EA not executing), but last restart was 5.9 min ago - waiting out the cooldown.
+2026-08-27 23:09:50  STALL (heartbeat 94.8 min old (threshold 2) - EA not executing), but last restart was 7.9 min ago - waiting out the cooldown.
+2026-08-27 23:11:50  STALL (heartbeat 96.8 min old (threshold 2) - EA not executing), but last restart was 9.9 min ago - waiting out the cooldown.
+2026-08-27 23:13:50  STALL DETECTED: heartbeat 98.8 min old (threshold 2) - EA not executing.
+2026-08-27 23:13:50  Stopping terminal64.exe ...
+2026-08-27 23:13:58  Starting MT5 ...
+2026-08-27 23:13:58  Restart issued. MT5 will reload the chart and the EA with its saved inputs.
+2026-08-27 23:15:50  STALL (heartbeat 100.8 min old (threshold 2) - EA not executing), but last restart was 1.9 min ago - waiting out the cooldown.
+2026-08-27 23:17:50  STALL (heartbeat 102.8 min old (threshold 2) - EA not executing), but last restart was 3.9 min ago - waiting out the cooldown.
+2026-08-27 23:19:50  STALL (heartbeat 104.8 min old (threshold 2) - EA not executing), but last restart was 5.9 min ago - waiting out the cooldown.
+2026-08-27 23:21:50  STALL (heartbeat 106.8 min old (threshold 2) - EA not executing), but last restart was 7.9 min ago - waiting out the cooldown.
+2026-08-27 23:23:50  STALL (heartbeat 108.8 min old (threshold 2) - EA not executing), but last restart was 9.9 min ago - waiting out the cooldown.
+2026-08-27 23:25:50  STALL DETECTED: heartbeat 110.8 min old (threshold 2) - EA not executing.
+2026-08-27 23:25:50  Stopping terminal64.exe ...
+2026-08-27 23:25:58  Starting MT5 ...
+2026-08-27 23:25:58  Restart issued. MT5 will reload the chart and the EA with its saved inputs.
+2026-08-27 23:27:50  STALL (heartbeat 112.8 min old (threshold 2) - EA not executing), but last restart was 1.9 min ago - waiting out the cooldown.
+2026-08-27 23:29:50  STALL (heartbeat 114.8 min old (threshold 2) - EA not executing), but last restart was 3.9 min ago - waiting out the cooldown.
+2026-08-27 23:31:50  STALL (heartbeat 116.8 min old (threshold 2) - EA not executing), but last restart was 5.9 min ago - waiting out the cooldown.
+2026-08-27 23:33:50  STALL (heartbeat 118.8 min old (threshold 2) - EA not executing), but last restart was 7.9 min ago - waiting out the cooldown.
+2026-08-27 23:35:50  STALL (heartbeat 120.8 min old (threshold 2) - EA not executing), but last restart was 9.9 min ago - waiting out the cooldown.
+2026-08-27 23:37:50  STALL DETECTED: heartbeat 122.8 min old (threshold 2) - EA not executing.
+2026-08-27 23:37:50  Stopping terminal64.exe ...
+2026-08-27 23:37:58  Starting MT5 ...
+2026-08-27 23:37:58  Restart issued. MT5 will reload the chart and the EA with its saved inputs.
+2026-08-27 23:39:50  STALL (heartbeat 124.8 min old (threshold 2) - EA not executing), but last restart was 1.9 min ago - waiting out the cooldown.
+2026-08-27 23:41:50  STALL (heartbeat 126.8 min old (threshold 2) - EA not executing), but last restart was 3.9 min ago - waiting out the cooldown.
+2026-08-27 23:43:50  STALL (heartbeat 128.8 min old (threshold 2) - EA not executing), but last restart was 5.9 min ago - waiting out the cooldown.
+2026-08-27 23:45:50  STALL (heartbeat 130.8 min old (threshold 2) - EA not executing), but last restart was 7.9 min ago - waiting out the cooldown.
+2026-08-27 23:47:50  STALL (heartbeat 132.8 min old (threshold 2) - EA not executing), but last restart was 9.9 min ago - waiting out the cooldown.
+2026-08-27 23:49:50  STALL DETECTED: heartbeat 134.8 min old (threshold 2) - EA not executing.
+2026-08-27 23:49:50  Stopping terminal64.exe ...
+2026-08-27 23:49:58  Starting MT5 ...
+2026-08-27 23:49:58  Restart issued. MT5 will reload the chart and the EA with its saved inputs.
+2026-08-27 23:51:50  STALL (heartbeat 136.8 min old (threshold 2) - EA not executing), but last restart was 1.9 min ago - waiting out the cooldown.
+2026-08-27 23:53:50  STALL (heartbeat 138.8 min old (threshold 2) - EA not executing), but last restart was 3.9 min ago - waiting out the cooldown.
+2026-08-27 23:55:50  STALL (heartbeat 140.8 min old (threshold 2) - EA not executing), but last restart was 5.9 min ago - waiting out the cooldown.
+2026-08-27 23:57:50  STALL (heartbeat 142.8 min old (threshold 2) - EA not executing), but last restart was 7.9 min ago - waiting out the cooldown.
+2026-08-27 23:59:50  STALL (heartbeat 144.8 min old (threshold 2) - EA not executing), but last restart was 9.9 min ago - waiting out the cooldown.
+2026-08-28 00:01:50  STALL DETECTED: heartbeat 146.8 min old (threshold 2) - EA not executing.
+2026-08-28 00:01:50  Stopping terminal64.exe ...
+2026-08-28 00:01:58  Starting MT5 ...
+2026-08-28 00:01:58  Restart issued. MT5 will reload the chart and the EA with its saved inputs.
+2026-08-28 00:03:50  STALL (heartbeat 148.8 min old (threshold 2) - EA not executing), but last restart was 1.9 min ago - waiting out the cooldown.
+2026-08-28 00:05:50  STALL (heartbeat 150.8 min old (threshold 2) - EA not executing), but last restart was 3.9 min ago - waiting out the cooldown.
+2026-08-28 00:07:50  STALL (heartbeat 152.8 min old (threshold 2) - EA not executing), but last restart was 5.9 min ago - waiting out the cooldown.
+2026-08-28 00:09:50  STALL (heartbeat 154.8 min old (threshold 2) - EA not executing), but last restart was 7.9 min ago - waiting out the cooldown.
+2026-08-28 00:11:50  STALL (heartbeat 156.8 min old (threshold 2) - EA not executing), but last restart was 9.9 min ago - waiting out the cooldown.
+2026-08-28 00:13:50  STALL DETECTED: heartbeat 158.8 min old (threshold 2) - EA not executing.
+2026-08-28 00:13:50  Stopping terminal64.exe ...
+2026-08-28 00:13:58  Starting MT5 ...
+2026-08-28 00:13:58  Restart issued. MT5 will reload the chart and the EA with its saved inputs.
+2026-08-28 00:15:50  STALL (heartbeat 160.8 min old (threshold 2) - EA not executing), but last restart was 1.9 min ago - waiting out the cooldown.
+2026-08-28 00:17:50  STALL (heartbeat 162.8 min old (threshold 2) - EA not executing), but last restart was 3.9 min ago - waiting out the cooldown.
+2026-08-28 00:19:50  STALL (heartbeat 164.8 min old (threshold 2) - EA not executing), but last restart was 5.9 min ago - waiting out the cooldown.
+2026-08-28 00:21:50  STALL (heartbeat 166.8 min old (threshold 2) - EA not executing), but last restart was 7.9 min ago - waiting out the cooldown.
+2026-08-28 00:23:50  STALL (heartbeat 168.8 min old (threshold 2) - EA not executing), but last restart was 9.9 min ago - waiting out the cooldown.
+2026-08-28 00:25:50  STALL DETECTED: heartbeat 170.8 min old (threshold 2) - EA not executing.
+2026-08-28 00:25:50  Stopping terminal64.exe ...
+2026-08-28 00:25:58  Starting MT5 ...
+2026-08-28 00:25:58  Restart issued. MT5 will reload the chart and the EA with its saved inputs.
+2026-08-28 00:27:50  STALL (heartbeat 172.8 min old (threshold 2) - EA not executing), but last restart was 1.9 min ago - waiting out the cooldown.
+2026-08-28 00:29:50  STALL (heartbeat 174.8 min old (threshold 2) - EA not executing), but last restart was 3.9 min ago - waiting out the cooldown.
+2026-08-28 00:31:50  STALL (heartbeat 176.8 min old (threshold 2) - EA not executing), but last restart was 5.9 min ago - waiting out the cooldown.
+2026-08-28 00:33:50  STALL (heartbeat 178.8 min old (threshold 2) - EA not executing), but last restart was 7.9 min ago - waiting out the cooldown.
+2026-08-28 00:35:50  STALL (heartbeat 180.8 min old (threshold 2) - EA not executing), but last restart was 9.9 min ago - waiting out the cooldown.
+2026-08-28 00:37:50  STALL DETECTED: heartbeat 182.8 min old (threshold 2) - EA not executing.
+2026-08-28 00:37:50  Stopping terminal64.exe ...
+2026-08-28 00:37:58  Starting MT5 ...
+2026-08-28 00:37:58  Restart issued. MT5 will reload the chart and the EA with its saved inputs.
+2026-08-28 00:39:50  STALL (heartbeat 184.8 min old (threshold 2) - EA not executing), but last restart was 1.9 min ago - waiting out the cooldown.
+2026-08-28 00:41:50  STALL (heartbeat 186.8 min old (threshold 2) - EA not executing), but last restart was 3.9 min ago - waiting out the cooldown.
+2026-08-28 00:43:50  STALL (heartbeat 188.8 min old (threshold 2) - EA not executing), but last restart was 5.9 min ago - waiting out the cooldown.
+2026-08-28 00:45:50  STALL (heartbeat 190.8 min old (threshold 2) - EA not executing), but last restart was 7.9 min ago - waiting out the cooldown.
+2026-08-28 00:47:50  STALL (heartbeat 192.8 min old (threshold 2) - EA not executing), but last restart was 9.9 min ago - waiting out the cooldown.
+2026-08-28 00:49:50  STALL DETECTED: heartbeat 194.8 min old (threshold 2) - EA not executing.
+2026-08-28 00:49:50  Stopping terminal64.exe ...
+2026-08-28 00:49:58  Starting MT5 ...
+2026-08-28 00:49:58  Restart issued. MT5 will reload the chart and the EA with its saved inputs.
+2026-08-28 00:51:50  STALL (heartbeat 196.8 min old (threshold 2) - EA not executing), but last restart was 1.9 min ago - waiting out the cooldown.
+2026-08-28 00:53:50  STALL (heartbeat 198.8 min old (threshold 2) - EA not executing), but last restart was 3.9 min ago - waiting out the cooldown.
+2026-08-28 00:55:50  STALL (heartbeat 200.8 min old (threshold 2) - EA not executing), but last restart was 5.9 min ago - waiting out the cooldown.
+2026-08-28 00:57:50  STALL (heartbeat 202.8 min old (threshold 2) - EA not executing), but last restart was 7.9 min ago - waiting out the cooldown.
+2026-08-28 00:59:50  STALL (heartbeat 204.8 min old (threshold 2) - EA not executing), but last restart was 9.9 min ago - waiting out the cooldown.
+2026-08-28 01:01:50  STALL DETECTED: heartbeat 206.8 min old (threshold 2) - EA not executing.
+2026-08-28 01:01:50  Stopping terminal64.exe ...
+2026-08-28 01:01:58  Starting MT5 ...
+2026-08-28 01:01:58  Restart issued. MT5 will reload the chart and the EA with its saved inputs.
+2026-08-28 01:03:50  STALL (heartbeat 208.8 min old (threshold 2) - EA not executing), but last restart was 1.9 min ago - waiting out the cooldown.
+2026-08-28 01:05:50  STALL (heartbeat 210.8 min old (threshold 2) - EA not executing), but last restart was 3.9 min ago - waiting out the cooldown.
+2026-08-28 01:07:50  STALL (heartbeat 212.8 min old (threshold 2) - EA not executing), but last restart was 5.9 min ago - waiting out the cooldown.
+2026-08-28 01:09:50  STALL (heartbeat 214.8 min old (threshold 2) - EA not executing), but last restart was 7.9 min ago - waiting out the cooldown.
+2026-08-28 01:11:50  STALL (heartbeat 216.8 min old (threshold 2) - EA not executing), but last restart was 9.9 min ago - waiting out the cooldown.
+2026-08-28 01:13:50  STALL DETECTED: heartbeat 218.8 min old (threshold 2) - EA not executing.
+2026-08-28 01:13:50  Stopping terminal64.exe ...
+2026-08-28 01:13:58  Starting MT5 ...
+2026-08-28 01:13:58  Restart issued. MT5 will reload the chart and the EA with its saved inputs.
+2026-08-28 01:15:50  STALL (heartbeat 220.8 min old (threshold 2) - EA not executing), but last restart was 1.9 min ago - waiting out the cooldown.
+2026-08-28 01:17:50  STALL (heartbeat 222.8 min old (threshold 2) - EA not executing), but last restart was 3.9 min ago - waiting out the cooldown.
+2026-08-28 01:19:50  STALL (heartbeat 224.8 min old (threshold 2) - EA not executing), but last restart was 5.9 min ago - waiting out the cooldown.
+2026-08-28 01:21:50  STALL (heartbeat 226.8 min old (threshold 2) - EA not executing), but last restart was 7.9 min ago - waiting out the cooldown.
+2026-08-28 01:23:50  STALL (heartbeat 228.8 min old (threshold 2) - EA not executing), but last restart was 9.9 min ago - waiting out the cooldown.
+2026-08-28 01:25:50  STALL DETECTED: heartbeat 230.8 min old (threshold 2) - EA not executing.
+2026-08-28 01:25:50  Stopping terminal64.exe ...
+2026-08-28 01:25:58  Starting MT5 ...
+2026-08-28 01:25:58  Restart issued. MT5 will reload the chart and the EA with its saved inputs.
+2026-08-28 01:27:50  STALL (heartbeat 232.8 min old (threshold 2) - EA not executing), but last restart was 1.9 min ago - waiting out the cooldown.
+2026-08-28 01:29:51  STALL (heartbeat 234.8 min old (threshold 2) - EA not executing), but last restart was 3.9 min ago - waiting out the cooldown.
+2026-08-28 01:31:50  STALL (heartbeat 236.8 min old (threshold 2) - EA not executing), but last restart was 5.9 min ago - waiting out the cooldown.
+2026-08-28 01:33:50  STALL (heartbeat 238.8 min old (threshold 2) - EA not executing), but last restart was 7.9 min ago - waiting out the cooldown.
+2026-08-28 01:35:50  STALL (heartbeat 240.8 min old (threshold 2) - EA not executing), but last restart was 9.9 min ago - waiting out the cooldown.
+2026-08-28 01:37:50  STALL DETECTED: heartbeat 242.8 min old (threshold 2) - EA not executing.
+2026-08-28 01:37:50  Stopping terminal64.exe ...
+2026-08-28 01:37:58  Starting MT5 ...
+2026-08-28 01:37:58  Restart issued. MT5 will reload the chart and the EA with its saved inputs.
+2026-08-28 01:39:50  STALL (heartbeat 244.8 min old (threshold 2) - EA not executing), but last restart was 1.9 min ago - waiting out the cooldown.
+2026-08-28 01:41:50  STALL (heartbeat 246.8 min old (threshold 2) - EA not executing), but last restart was 3.9 min ago - waiting out the cooldown.
+2026-08-28 01:43:51  STALL (heartbeat 248.8 min old (threshold 2) - EA not executing), but last restart was 5.9 min ago - waiting out the cooldown.
+2026-08-28 01:45:50  STALL (heartbeat 250.8 min old (threshold 2) - EA not executing), but last restart was 7.9 min ago - waiting out the cooldown.
+2026-08-28 01:47:50  STALL (heartbeat 252.8 min old (threshold 2) - EA not executing), but last restart was 9.9 min ago - waiting out the cooldown.
+2026-08-28 01:49:50  STALL DETECTED: heartbeat 254.8 min old (threshold 2) - EA not executing.
+2026-08-28 01:49:50  Stopping terminal64.exe ...
+2026-08-28 01:49:58  Starting MT5 ...
+2026-08-28 01:49:59  Restart issued. MT5 will reload the chart and the EA with its saved inputs.
+2026-08-28 01:51:51  STALL (heartbeat 256.8 min old (threshold 2) - EA not executing), but last restart was 1.9 min ago - waiting out the cooldown.
+2026-08-28 01:53:51  STALL (heartbeat 258.8 min old (threshold 2) - EA not executing), but last restart was 3.9 min ago - waiting out the cooldown.
+2026-08-28 01:55:50  STALL (heartbeat 260.8 min old (threshold 2) - EA not executing), but last restart was 5.9 min ago - waiting out the cooldown.
+2026-08-28 01:57:51  STALL (heartbeat 262.8 min old (threshold 2) - EA not executing), but last restart was 7.9 min ago - waiting out the cooldown.
+2026-08-28 01:59:50  STALL (heartbeat 264.8 min old (threshold 2) - EA not executing), but last restart was 9.9 min ago - waiting out the cooldown.
+2026-08-28 02:01:50  STALL DETECTED: heartbeat 266.8 min old (threshold 2) - EA not executing.
+2026-08-28 02:01:50  Stopping terminal64.exe ...
+2026-08-28 02:01:58  Starting MT5 ...
+2026-08-28 02:01:59  Restart issued. MT5 will reload the chart and the EA with its saved inputs.
+2026-08-28 02:03:50  STALL (heartbeat 268.8 min old (threshold 2) - EA not executing), but last restart was 1.9 min ago - waiting out the cooldown.
+2026-08-28 02:05:50  STALL (heartbeat 270.8 min old (threshold 2) - EA not executing), but last restart was 3.9 min ago - waiting out the cooldown.
+2026-08-28 02:07:51  STALL (heartbeat 272.8 min old (threshold 2) - EA not executing), but last restart was 5.9 min ago - waiting out the cooldown.
+2026-08-28 02:09:50  STALL (heartbeat 274.8 min old (threshold 2) - EA not executing), but last restart was 7.9 min ago - waiting out the cooldown.
+2026-08-28 02:11:50  STALL (heartbeat 276.8 min old (threshold 2) - EA not executing), but last restart was 9.9 min ago - waiting out the cooldown.
+2026-08-28 02:13:51  STALL DETECTED: heartbeat 278.8 min old (threshold 2) - EA not executing.
+2026-08-28 02:13:51  Stopping terminal64.exe ...
+2026-08-28 02:13:59  Starting MT5 ...
+2026-08-28 02:13:59  Restart issued. MT5 will reload the chart and the EA with its saved inputs.
+2026-08-28 02:15:50  STALL (heartbeat 280.8 min old (threshold 2) - EA not executing), but last restart was 1.9 min ago - waiting out the cooldown.
+2026-08-28 02:17:50  STALL (heartbeat 282.8 min old (threshold 2) - EA not executing), but last restart was 3.9 min ago - waiting out the cooldown.
+2026-08-28 02:19:50  STALL (heartbeat 284.8 min old (threshold 2) - EA not executing), but last restart was 5.9 min ago - waiting out the cooldown.
+2026-08-28 02:21:51  STALL (heartbeat 286.8 min old (threshold 2) - EA not executing), but last restart was 7.9 min ago - waiting out the cooldown.
+2026-08-28 02:23:50  STALL (heartbeat 288.8 min old (threshold 2) - EA not executing), but last restart was 9.9 min ago - waiting out the cooldown.
+2026-08-28 02:25:50  STALL DETECTED: heartbeat 290.8 min old (threshold 2) - EA not executing.
+2026-08-28 02:25:50  Stopping terminal64.exe ...
+2026-08-28 02:25:58  Starting MT5 ...
+2026-08-28 02:25:59  Restart issued. MT5 will reload the chart and the EA with its saved inputs.
+2026-08-28 02:27:51  STALL (heartbeat 292.8 min old (threshold 2) - EA not executing), but last restart was 1.9 min ago - waiting out the cooldown.
+2026-08-28 02:29:50  STALL (heartbeat 294.8 min old (threshold 2) - EA not executing), but last restart was 3.9 min ago - waiting out the cooldown.
+2026-08-28 02:31:51  STALL (heartbeat 296.8 min old (threshold 2) - EA not executing), but last restart was 5.9 min ago - waiting out the cooldown.
+2026-08-28 02:33:50  STALL (heartbeat 298.8 min old (threshold 2) - EA not executing), but last restart was 7.9 min ago - waiting out the cooldown.
+2026-08-28 02:35:51  STALL (heartbeat 300.8 min old (threshold 2) - EA not executing), but last restart was 9.9 min ago - waiting out the cooldown.
+2026-08-28 02:37:50  STALL DETECTED: heartbeat 302.8 min old (threshold 2) - EA not executing.
+2026-08-28 02:37:50  Stopping terminal64.exe ...
+2026-08-28 02:37:58  Starting MT5 ...
+2026-08-28 02:37:59  Restart issued. MT5 will reload the chart and the EA with its saved inputs.
+2026-08-28 02:39:50  STALL (heartbeat 304.8 min old (threshold 2) - EA not executing), but last restart was 1.9 min ago - waiting out the cooldown.
+2026-08-28 02:41:51  STALL (heartbeat 306.8 min old (threshold 2) - EA not executing), but last restart was 3.9 min ago - waiting out the cooldown.
+2026-08-28 02:43:51  STALL (heartbeat 308.8 min old (threshold 2) - EA not executing), but last restart was 5.9 min ago - waiting out the cooldown.
+2026-08-28 02:45:50  STALL (heartbeat 310.8 min old (threshold 2) - EA not executing), but last restart was 7.9 min ago - waiting out the cooldown.
+2026-08-28 02:47:50  STALL (heartbeat 312.8 min old (threshold 2) - EA not executing), but last restart was 9.9 min ago - waiting out the cooldown.
+2026-08-28 02:49:50  STALL DETECTED: heartbeat 314.8 min old (threshold 2) - EA not executing.
+2026-08-28 02:49:50  Stopping terminal64.exe ...
+2026-08-28 02:49:58  Starting MT5 ...
+2026-08-28 02:49:59  Restart issued. MT5 will reload the chart and the EA with its saved inputs.
+2026-08-28 02:51:50  STALL (heartbeat 316.8 min old (threshold 2) - EA not executing), but last restart was 1.9 min ago - waiting out the cooldown.
+2026-08-28 02:53:50  STALL (heartbeat 318.8 min old (threshold 2) - EA not executing), but last restart was 3.9 min ago - waiting out the cooldown.
+2026-08-28 02:55:50  STALL (heartbeat 320.8 min old (threshold 2) - EA not executing), but last restart was 5.9 min ago - waiting out the cooldown.
+2026-08-28 02:57:50  STALL (heartbeat 322.8 min old (threshold 2) - EA not executing), but last restart was 7.9 min ago - waiting out the cooldown.
+2026-08-28 02:59:50  STALL (heartbeat 324.8 min old (threshold 2) - EA not executing), but last restart was 9.9 min ago - waiting out the cooldown.
+2026-08-28 03:01:50  STALL DETECTED: heartbeat 326.8 min old (threshold 2) - EA not executing.
+2026-08-28 03:01:50  Stopping terminal64.exe ...
+2026-08-28 03:01:59  Starting MT5 ...
+2026-08-28 03:01:59  Restart issued. MT5 will reload the chart and the EA with its saved inputs.
+2026-08-28 03:03:50  STALL (heartbeat 328.8 min old (threshold 2) - EA not executing), but last restart was 1.9 min ago - waiting out the cooldown.
+2026-08-28 03:05:51  STALL (heartbeat 330.8 min old (threshold 2) - EA not executing), but last restart was 3.9 min ago - waiting out the cooldown.
+2026-08-28 03:07:51  STALL (heartbeat 332.8 min old (threshold 2) - EA not executing), but last restart was 5.9 min ago - waiting out the cooldown.
+2026-08-28 03:09:51  STALL (heartbeat 334.8 min old (threshold 2) - EA not executing), but last restart was 7.9 min ago - waiting out the cooldown.
+2026-08-28 03:11:50  STALL (heartbeat 336.8 min old (threshold 2) - EA not executing), but last restart was 9.9 min ago - waiting out the cooldown.
+2026-08-28 03:13:51  STALL DETECTED: heartbeat 338.8 min old (threshold 2) - EA not executing.
+2026-08-28 03:13:51  Stopping terminal64.exe ...
+2026-08-28 03:13:59  Starting MT5 ...
+2026-08-28 03:13:59  Restart issued. MT5 will reload the chart and the EA with its saved inputs.
+2026-08-28 03:15:50  STALL (heartbeat 340.8 min old (threshold 2) - EA not executing), but last restart was 1.9 min ago - waiting out the cooldown.
+2026-08-28 03:17:51  STALL (heartbeat 342.8 min old (threshold 2) - EA not executing), but last restart was 3.9 min ago - waiting out the cooldown.
+2026-08-28 03:19:51  STALL (heartbeat 344.8 min old (threshold 2) - EA not executing), but last restart was 5.9 min ago - waiting out the cooldown.
+2026-08-28 03:21:51  STALL (heartbeat 346.8 min old (threshold 2) - EA not executing), but last restart was 7.9 min ago - waiting out the cooldown.
+2026-08-28 03:23:50  STALL (heartbeat 348.8 min old (threshold 2) - EA not executing), but last restart was 9.9 min ago - waiting out the cooldown.
+2026-08-28 03:25:51  STALL DETECTED: heartbeat 350.8 min old (threshold 2) - EA not executing.
+2026-08-28 03:25:51  Stopping terminal64.exe ...
+2026-08-28 03:25:59  Starting MT5 ...
+2026-08-28 03:25:59  Restart issued. MT5 will reload the chart and the EA with its saved inputs.
+2026-08-28 03:27:51  STALL (heartbeat 352.8 min old (threshold 2) - EA not executing), but last restart was 1.9 min ago - waiting out the cooldown.
+2026-08-28 03:29:51  STALL (heartbeat 354.8 min old (threshold 2) - EA not executing), but last restart was 3.9 min ago - waiting out the cooldown.
+2026-08-28 03:31:51  STALL (heartbeat 356.8 min old (threshold 2) - EA not executing), but last restart was 5.9 min ago - waiting out the cooldown.
+2026-08-28 03:33:51  STALL (heartbeat 358.8 min old (threshold 2) - EA not executing), but last restart was 7.9 min ago - waiting out the cooldown.
+2026-08-28 03:35:50  STALL (heartbeat 360.8 min old (threshold 2) - EA not executing), but last restart was 9.9 min ago - waiting out the cooldown.
+2026-08-28 03:37:51  STALL DETECTED: heartbeat 362.8 min old (threshold 2) - EA not executing.
+2026-08-28 03:37:51  Stopping terminal64.exe ...
+2026-08-28 03:37:59  Starting MT5 ...
+2026-08-28 03:37:59  Restart issued. MT5 will reload the chart and the EA with its saved inputs.
+2026-08-28 03:39:51  STALL (heartbeat 364.8 min old (threshold 2) - EA not executing), but last restart was 1.9 min ago - waiting out the cooldown.
+2026-08-28 03:41:51  STALL (heartbeat 366.8 min old (threshold 2) - EA not executing), but last restart was 3.9 min ago - waiting out the cooldown.
+2026-08-28 03:43:51  STALL (heartbeat 368.8 min old (threshold 2) - EA not executing), but last restart was 5.9 min ago - waiting out the cooldown.
+2026-08-28 03:45:51  STALL (heartbeat 370.8 min old (threshold 2) - EA not executing), but last restart was 7.9 min ago - waiting out the cooldown.
+2026-08-28 03:47:51  STALL (heartbeat 372.8 min old (threshold 2) - EA not executing), but last restart was 9.9 min ago - waiting out the cooldown.
+2026-08-28 03:49:51  STALL DETECTED: heartbeat 374.8 min old (threshold 2) - EA not executing.
+2026-08-28 03:49:51  Stopping terminal64.exe ...
+2026-08-28 03:49:59  Starting MT5 ...
+2026-08-28 03:49:59  Restart issued. MT5 will reload the chart and the EA with its saved inputs.
+2026-08-28 03:51:51  STALL (heartbeat 376.8 min old (threshold 2) - EA not executing), but last restart was 1.9 min ago - waiting out the cooldown.
+2026-08-28 03:53:51  STALL (heartbeat 378.8 min old (threshold 2) - EA not executing), but last restart was 3.9 min ago - waiting out the cooldown.
+2026-08-28 03:55:51  STALL (heartbeat 380.8 min old (threshold 2) - EA not executing), but last restart was 5.9 min ago - waiting out the cooldown.
+2026-08-28 03:57:51  STALL (heartbeat 382.8 min old (threshold 2) - EA not executing), but last restart was 7.9 min ago - waiting out the cooldown.
+2026-08-28 03:59:51  STALL (heartbeat 384.8 min old (threshold 2) - EA not executing), but last restart was 9.9 min ago - waiting out the cooldown.
+2026-08-28 04:01:51  STALL DETECTED: heartbeat 386.8 min old (threshold 2) - EA not executing.
+2026-08-28 04:01:51  Stopping terminal64.exe ...
+2026-08-28 04:01:59  Starting MT5 ...
+2026-08-28 04:01:59  Restart issued. MT5 will reload the chart and the EA with its saved inputs.
+2026-08-28 04:03:51  STALL (heartbeat 388.8 min old (threshold 2) - EA not executing), but last restart was 1.9 min ago - waiting out the cooldown.
+2026-08-28 04:05:51  STALL (heartbeat 390.8 min old (threshold 2) - EA not executing), but last restart was 3.9 min ago - waiting out the cooldown.
+2026-08-28 04:07:51  STALL (heartbeat 392.8 min old (threshold 2) - EA not executing), but last restart was 5.9 min ago - waiting out the cooldown.
+2026-08-28 04:09:51  STALL (heartbeat 394.8 min old (threshold 2) - EA not executing), but last restart was 7.9 min ago - waiting out the cooldown.
+2026-08-28 04:11:51  STALL (heartbeat 396.8 min old (threshold 2) - EA not executing), but last restart was 9.9 min ago - waiting out the cooldown.
+2026-08-28 04:13:51  STALL DETECTED: heartbeat 398.8 min old (threshold 2) - EA not executing.
+2026-08-28 04:13:51  Stopping terminal64.exe ...
+2026-08-28 04:13:59  Starting MT5 ...
+2026-08-28 04:13:59  Restart issued. MT5 will reload the chart and the EA with its saved inputs.
+2026-08-28 04:15:51  STALL (heartbeat 400.8 min old (threshold 2) - EA not executing), but last restart was 1.9 min ago - waiting out the cooldown.
+2026-08-28 04:17:51  STALL (heartbeat 402.8 min old (threshold 2) - EA not executing), but last restart was 3.9 min ago - waiting out the cooldown.
+2026-08-28 04:19:51  STALL (heartbeat 404.8 min old (threshold 2) - EA not executing), but last restart was 5.9 min ago - waiting out the cooldown.
+2026-08-28 04:21:51  STALL (heartbeat 406.8 min old (threshold 2) - EA not executing), but last restart was 7.9 min ago - waiting out the cooldown.
+2026-08-28 04:23:51  STALL (heartbeat 408.8 min old (threshold 2) - EA not executing), but last restart was 9.9 min ago - waiting out the cooldown.
+2026-08-28 04:25:51  STALL DETECTED: heartbeat 410.8 min old (threshold 2) - EA not executing.
+2026-08-28 04:25:51  Stopping terminal64.exe ...
+2026-08-28 04:25:59  Starting MT5 ...
+2026-08-28 04:25:59  Restart issued. MT5 will reload the chart and the EA with its saved inputs.
+2026-08-28 04:27:51  STALL (heartbeat 412.8 min old (threshold 2) - EA not executing), but last restart was 1.9 min ago - waiting out the cooldown.
+2026-08-28 04:29:51  STALL (heartbeat 414.8 min old (threshold 2) - EA not executing), but last restart was 3.9 min ago - waiting out the cooldown.
+2026-08-28 04:31:51  STALL (heartbeat 416.8 min old (threshold 2) - EA not executing), but last restart was 5.9 min ago - waiting out the cooldown.
+2026-08-28 04:33:51  STALL (heartbeat 418.8 min old (threshold 2) - EA not executing), but last restart was 7.9 min ago - waiting out the cooldown.
+2026-08-28 04:35:51  STALL (heartbeat 420.8 min old (threshold 2) - EA not executing), but last restart was 9.9 min ago - waiting out the cooldown.
+2026-08-28 04:37:51  STALL DETECTED: heartbeat 422.8 min old (threshold 2) - EA not executing.
+2026-08-28 04:37:51  Stopping terminal64.exe ...
+2026-08-28 04:37:59  Starting MT5 ...
+2026-08-28 04:37:59  Restart issued. MT5 will reload the chart and the EA with its saved inputs.
+2026-08-28 04:39:51  STALL (heartbeat 424.8 min old (threshold 2) - EA not executing), but last restart was 1.9 min ago - waiting out the cooldown.
+2026-08-28 04:41:51  STALL (heartbeat 426.8 min old (threshold 2) - EA not executing), but last restart was 3.9 min ago - waiting out the cooldown.
+2026-08-28 04:43:51  STALL (heartbeat 428.8 min old (threshold 2) - EA not executing), but last restart was 5.9 min ago - waiting out the cooldown.
+2026-08-28 04:45:51  STALL (heartbeat 430.8 min old (threshold 2) - EA not executing), but last restart was 7.9 min ago - waiting out the cooldown.
+2026-08-28 04:47:51  STALL (heartbeat 432.8 min old (threshold 2) - EA not executing), but last restart was 9.9 min ago - waiting out the cooldown.
+2026-08-28 04:49:51  STALL DETECTED: heartbeat 434.8 min old (threshold 2) - EA not executing.
+2026-08-28 04:49:51  Stopping terminal64.exe ...
+2026-08-28 04:49:59  Starting MT5 ...
+2026-08-28 04:49:59  Restart issued. MT5 will reload the chart and the EA with its saved inputs.
+2026-08-28 04:51:51  STALL (heartbeat 436.8 min old (threshold 2) - EA not executing), but last restart was 1.9 min ago - waiting out the cooldown.
+2026-08-28 04:53:51  STALL (heartbeat 438.8 min old (threshold 2) - EA not executing), but last restart was 3.9 min ago - waiting out the cooldown.
+2026-08-28 04:55:51  STALL (heartbeat 440.8 min old (threshold 2) - EA not executing), but last restart was 5.9 min ago - waiting out the cooldown.
+2026-08-28 04:57:51  STALL (heartbeat 442.8 min old (threshold 2) - EA not executing), but last restart was 7.9 min ago - waiting out the cooldown.
+2026-08-28 04:59:51  STALL (heartbeat 444.8 min old (threshold 2) - EA not executing), but last restart was 9.9 min ago - waiting out the cooldown.
+2026-08-28 05:01:51  STALL DETECTED: heartbeat 446.8 min old (threshold 2) - EA not executing.
+2026-08-28 05:01:51  Stopping terminal64.exe ...
+2026-08-28 05:01:59  Starting MT5 ...
+2026-08-28 05:01:59  Restart issued. MT5 will reload the chart and the EA with its saved inputs.

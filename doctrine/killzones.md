@@ -1,5 +1,13 @@
 # Killzones & Session Rules
 
+> **STATUS: INFORMATIONAL ONLY since 2026-07-18.** The killzone hard gate and
+> killzone scoring were removed from doctrine by user decision — sessions no
+> longer block or grade a setup. This file remains as session-character
+> reference (when sweeps tend to be clean vs muddy, spread behavior, session
+> liquidity mapping) and for the journal's `Session:` field. The weekend /
+> Monday-open / news windows listed below are still enforced as killflags in
+> `entry-criteria.md` — those are gap/spread protection, not session filters.
+
 **All times PHT (Philippine Time). UTC IS NEVER USED ANYWHERE IN OUTPUT.** User is in the Philippines — every time, every reference, every label uses PHT only.
 
 Broker MT5 server runs on UTC. **Add 8 hours to broker clock to get PHT.** Example: broker shows `02:48 PM` → PHT is `10:48 PM`. The agent NEVER displays the intermediate broker/UTC time — always convert internally and output PHT only.
@@ -33,7 +41,7 @@ The agent always asks the user to confirm chart timezone if a screenshot's times
 ### London open (3:00 PM – 6:00 PM PHT)
 The bread-and-butter session.
 - Asia range usually exists. London either sweeps Asia high → reverses down, or sweeps Asia low → reverses up. ("Asia sweep + London reversal")
-- Most A-grade setups come from London sweep + 15m CHoCH + retest of OB/FVG, targeting opposite Asia/London extremes.
+- Most A-grade setups come from London sweep + 5m CHoCH + retest of the 5m OB/FVG, targeting opposite Asia/London extremes.
 
 ### NY AM (8:30 PM – 11:30 PM PHT)
 - Typical move: NY sweeps London's high or low, then runs in the opposite direction toward the prior day's level.

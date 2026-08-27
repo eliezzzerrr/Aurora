@@ -4,7 +4,9 @@ This is the agent's master file. Every analysis starts here.
 
 ## Mission
 
-Day-trade XAUUSD on 15m–1H using ICT/Smart Money Concepts. Target **50% win rate at 2:1 RR**. The edge is process discipline, not prediction.
+Day-trade XAUUSD on the **5m execution timeframe** (1H bias · 15m intermediate structure · 5m entries) using ICT/Smart Money Concepts. Target: **≥50% win rate at 2:1 RR validated (EV +0.5R/trade), stretching toward 60%** (EV +0.8R/trade) via grade-floor selectivity. The edge is process discipline, not prediction.
+
+**Honesty clause on the 60% number:** 60% at 2:1 is elite territory and is a *direction to optimize*, not a promise. The lever is selectivity (raising the grade floor from backtest WR-by-grade evidence), which trades frequency for hit rate. If the data tops out at 52–55%, that is a strongly profitable system and we say so rather than curve-fitting to reach a number.
 
 ## Current phase: **DEMO** 🧪
 
@@ -40,30 +42,37 @@ If any of those fail at the 30-trade review, stay on demo. Build to 50 trades, t
 
 Every A-grade setup follows this skeleton:
 
-1. **HTF context** — clear BOS or CHoCH on 1H establishing direction
-2. **Liquidity grab** — price sweeps a meaningful pool (prior session high/low, equal highs/lows, swing high/low)
-3. **Reversal confirmation** — 15m CHoCH or BOS *against* the sweep direction
-4. **POI retest** — price returns to the OB, FVG, or breaker that caused the CHoCH
+1. **HTF context** — clear BOS or CHoCH on 1H establishing direction, 15m not fighting it
+2. **Liquidity grab** — price sweeps a meaningful pool (prior session high/low, equal highs/lows, 15m/1H swing high/low)
+3. **Reversal confirmation** — 5m CHoCH or BOS *against* the sweep direction
+4. **POI retest** — price returns to the 5m OB, FVG, or breaker that caused the CHoCH
 5. **Entry** at the refined POI; SL beyond structural invalidation; TP at the next opposing liquidity pool ≥ 2R away
 
 If any of those five elements is missing → NO TRADE.
 
-## Killzones (PHT)
+## Sessions (PHT) — context only, NOT a gate
+
+> **DOCTRINE CHANGE — 2026-07-18:** the killzone hard gate is removed by user
+> decision. Any setup clearing the 7-point checklist + A- (12/16) grade floor
+> trades at any hour, 24/5. Sessions remain logged on every journal entry and
+> broken out at every review — if off-session trades drag the win rate, the
+> filter comes back with data behind it.
 
 User is in Philippines (PHT, UTC+8). **All times shown in PHT — that's your local clock.**
 
-- **London open:** 3:00 PM – 6:00 PM PHT — primary session for gold
-- **NY AM:** 8:30 PM – 11:30 PM PHT — secondary, often best volatility
-- **Asia (your daytime, 6 AM – 2 PM PHT):** rangebound, used for liquidity building only — do not trade
-- **Off-killzone setups** are NO TRADE by default
+Session character (still true, still worth knowing):
+- **London open:** 3:00 PM – 6:00 PM PHT — historically gold's most consistent directional window
+- **NY AM:** 8:30 PM – 11:30 PM PHT — best volatility of the day
+- **Asia (6 AM – 2 PM PHT):** rangebound, liquidity builds; sweeps here are statistically muddier
+- Expect wider spreads and more false 5m sweeps in low-volume hours — the grade floor is the only filter now; hold it hard
 
 (UTC reference: London 07:00–10:00 UTC, NY AM 12:30–15:30 UTC. Broker server is UTC−4 (NY); add 12h to broker clock for PHT.)
 
 ## Definitions of "fail"
 
 A trade is invalidated (SL hit) when:
-- Price closes 15m beyond the entry-defining POI on the wrong side
-- A CHoCH occurs against the trade direction on 15m
+- Price closes 5m beyond the entry-defining POI on the wrong side
+- A CHoCH occurs against the trade direction on 15m (intermediate structure break kills the thesis, not just 5m noise)
 
 A trade is closed early (manual) when:
 - Pre-2R, price prints structure that explicitly invalidates the thesis (e.g., new HTF BOS against position). This is logged as the realized R, not as a full loss.
@@ -72,9 +81,10 @@ A trade is closed early (manual) when:
 
 - Monday open (Sunday 21:00 UTC) and Saturday onwards (Friday 18:00 UTC) — weekend gap risk
 - 30 minutes before or after high-impact USD news (NFP, FOMC, CPI)
-- Asia session entries (6:00 AM – 2:00 PM PHT — your daytime)
 - Ranges with no swept liquidity
 - Setups where the next liquidity pool is < 2R from entry
+
+*(Removed 2026-07-18: the blanket "no Asia / off-killzone entries" rule — session no longer blocks a qualifying setup.)*
 
 ## Output discipline
 
@@ -85,31 +95,36 @@ User-facing output is signal only. All reasoning is captured in `trades/journal.
 The user runs this 30-second check BEFORE uploading any chart. The whole point: filter at the user's end so Aurora is only invoked on real trigger events, not on chop / impatience / mid-candle wicks.
 
 ```
-Q1: Did a 15m candle JUST CLOSE (within ~60s)?
+Q1: Did a 5m candle JUST CLOSE (within ~30s)?
     NO  → don't upload, wait
     YES → continue
 
-Q2: Are we inside a killzone (London 3–6 PM PHT or NY 8:30–11:30 PM PHT)?
-    NO  → don't upload (except for pre-session briefing at 2:45 / 8:15 PM PHT)
-    YES → continue
-
-Q3: Did one of the 4 TRIGGER EVENTS print on the closed candle?
+Q2: Did one of the 4 TRIGGER EVENTS print on the closed candle?
     NO  → don't upload, watch next candle
     YES → ✅ upload
+
+(Session question removed 2026-07-18 — uploads are valid at any hour. The
+trigger-event filter is now the ONLY thing standing between you and 24/5
+screen-watching. Respect it, or the 5m will eat your sleep.)
 ```
 
 ### The only 4 events that warrant an upload
 
 | # | Trigger | What it looks like |
 |---|---------|--------------------|
-| 1 | **Sweep confirmed** | 15m closes clearly past a marked BSL/SSL with rejection wick (e.g., wick above 4,545, body closes < 4,544) |
-| 2 | **CHoCH confirmed** | 15m closes past the most recent 15m swing low (short) or swing high (long) |
-| 3 | **Retest filling** | After sweep + CHoCH, price pulls back into the 15m OB / FVG — entry zone tagged |
-| 4 | **Thesis broken** | 15m closes clearly above structural invalidation (e.g., above the 1H OB top); re-bias needed |
+| 1 | **Sweep confirmed** | 5m closes clearly past a marked BSL/SSL with rejection wick (e.g., wick above 4,545, body closes < 4,544) |
+| 2 | **CHoCH confirmed** | 5m closes past the most recent 5m swing low (short) or swing high (long) |
+| 3 | **Retest filling** | After sweep + CHoCH, price pulls back into the 5m OB / FVG — entry zone tagged |
+| 4 | **Thesis broken** | 5m closes clearly beyond structural invalidation (e.g., above the 15m/1H OB top); re-bias needed |
+
+> **5m discipline warning:** the 5m closes 3× as often as the 15m — the trigger
+> filter matters MORE now, not less. A 5m close that merely wicks a level or
+> repeats the prior chop state is still not a trigger. When in doubt, wait for
+> the next close.
 
 ### What is NOT a trigger (do not upload)
 
-- Mid-candle wicks or spikes — always wait for the close
+- Mid-candle wicks or spikes — always wait for the 5m close
 - Marginal closes right on a level (close exactly at 4,545 = wait)
 - Same chop state as last upload (no structural change)
 - "Just checking in" or impatience
@@ -125,10 +140,18 @@ The system does **not** auto-learn. Doctrine never changes silently. But Aurora 
 
 Below 30 resolved trades, treat all findings as directional, not conclusive.
 
+## Doctrine changelog
+
+| Date | Change | Origin |
+|---|---|---|
+| 2026-07-18 | 15m → **5m execution port** (1H bias / 15m intermediate / 5m entries); scaled windows; EA v3.00 `ExecTF` | Planned migration (user + advisor) |
+| 2026-07-18 | **Session/killzone gate + scoring removed** — trade any qualifying setup 24/5; rubric 18 → 16 pts, floor A- = 12/16 | **User decision, against advisor recommendation** — impact MUST be measured by session-WR breakdown at the 30-trade review |
+
 ## File map
 
 - `playbook.md` — this file
-- `doctrine/entry-criteria.md` — the strict checklist (load-bearing)
+- `doctrine/entry-criteria.md` — strict 8-point checklist (load-bearing gate)
+- `doctrine/grading-rubric.md` — the 10-criterion / 18-point scoring system (load-bearing grade)
 - `doctrine/ict-framework.md` — ICT terms the agent uses
 - `doctrine/killzones.md` — session timing rules (PHT-primary)
 - `patterns/README.md` — learned pattern library (grows over time)

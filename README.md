@@ -1,6 +1,19 @@
-# Aurora — XAUUSD ICT/SMC Day-Trading Agent
+# Aurora — XAUUSD trading systems
 
-A disciplined, strict-checklist trading system for gold (XAUUSD) on 15m–1H timeframes, built on ICT / Smart Money Concepts. Operates via a custom Claude Code subagent that reads chart screenshots, runs an 8-point entry checklist, and emits signal-only trade calls or NO-TRADE with the failing criterion named.
+Two independent systems for gold (XAUUSD), sharing a repo and nothing else.
+
+| | What it is | Capital | Docs |
+|---|---|---|---|
+| **Aurora** | ICT/SMC **advisory** subagent. Reads chart screenshots, runs an 8-point checklist, emits a signal or NO-TRADE. Places no orders. | Demo 🧪 | this file |
+| **TrendEMA EA** | MetaTrader 5 Expert Advisor. Trades **automatically**, on a funded account. | **Real money ⚠️** | [`ea/README.md`](ea/README.md) |
+
+Their doctrines are separate. Aurora's killzones and grading rubric do not apply to the EA, and the EA's triggers are not Aurora patterns.
+
+---
+
+# Part 1 — Aurora (advisory agent)
+
+A disciplined, strict-checklist system on 15m–1H timeframes, built on ICT / Smart Money Concepts. A custom Claude Code subagent reads chart screenshots, runs an 8-point entry checklist, and emits signal-only trade calls or NO-TRADE with the failing criterion named.
 
 **Mission:** target 50% win rate at 2:1 RR. Edge comes from process discipline — rejecting B-grade setups — not from prediction.
 
@@ -132,12 +145,14 @@ If any fails at the 30-trade review, stay on demo. Live capital is earned, not a
 ```
 .
 ├── README.md                    This file
+├── CLAUDE.md                    Working notes for Claude Code (build, deploy, gotchas)
 ├── playbook.md                  Master reference — Aurora reads first on every analysis
-├── mt5/
-│   ├── Aurora.mq5               MetaTrader 5 Expert Advisor (auto-trader)
-│   └── README.md                MT5 install / inputs / backtest guide
+├── ea/
+│   ├── README.md                TrendEMA EA reference — strategy, triggers, risk
+│   └── TrendEMA_EA_v*.mq5/.ex5  Every version, newest is the deployed one
 ├── doctrine/
 │   ├── entry-criteria.md        The strict 8-point checklist (load-bearing)
+│   ├── grading-rubric.md        A/B/C setup grading
 │   ├── ict-framework.md         ICT / SMC vocabulary
 │   └── killzones.md             Session timing rules (PHT-primary)
 ├── patterns/
@@ -146,7 +161,8 @@ If any fails at the 30-trade review, stay on demo. Live capital is earned, not a
 ├── trades/
 │   └── journal.md               Every analysis logged here
 ├── scripts/
-│   └── journal-stats.py         Parses journal → JSON / pretty stats
+│   ├── journal-stats.py         Parses journal → JSON / pretty stats
+│   └── mt5-watchdog.ps1         Restarts MT5 on a stale EA heartbeat (not scheduled)
 ├── charts/                      Optional drop folder for chart screenshots
 └── .claude/
     ├── agents/aurora.md         The Aurora subagent definition (model: opus)
@@ -179,6 +195,41 @@ Aurora silently checks the journal on every invocation and surfaces banners abov
 - **Pattern decay**: < 30% WR after 8+ instances → retirement candidate
 - **Pattern emergence**: same novel setup 5+ times → propose adding to library
 - **Rule violation streak**: 3+ consecutive losses with relaxed criteria
+
+---
+
+---
+
+# Part 2 — TrendEMA EA (automated trader)
+
+Full reference: **[`ea/README.md`](ea/README.md)**.
+
+A MetaTrader 5 Expert Advisor on an M1 `XAUUSDc` chart, trading a **funded Exness cent account** at 1% risk per trade, up to 3 concurrent positions. Unlike Aurora it places, modifies and closes orders on its own.
+
+**Kill switch:** drop `TRENDEMA_STOP.txt` into `MQL5\Files`.
+
+### Strategy in one sentence
+
+> The 15M Ichimoku cloud grants permission, the 5M EMA 20/50 picks direction, and entries are taken at the 1M EMA 50 — with two RSI triggers that time entries differently and one that ignores the trend altogether.
+
+### Five triggers, each separately tagged
+
+| Tag | Mechanism |
+|---|---|
+| `TREND` / `CTR` | Limit resting at the EMA 50, re-priced every 1M bar |
+| `XING` / `XING-CTR` | Cross of the EMA 50, at market |
+| `RSIX` | Multi-timeframe RSI washout, entered on the turn — trend-blind by design |
+| `TRSI` | 1M RSI exhaustion *into* a confirmed 15M trend |
+
+Every order is tagged so results can be attributed per mechanism.
+
+### Risk
+
+1% per trade (1.25% ceiling), 3 positions, one per trigger slot, no opposing entries, 6% daily halt, 60-minute cooldown on the losing side after a loss, and a brake that blocks a direction after 3 losses in a row on it until the 15M flips.
+
+### Status
+
+Live and iterating. Results so far span tens of trades across a dozen versions, which is **not a clean sample** — the six-month backtest remains the outstanding item, and every trade is already tagged for it.
 
 ---
 

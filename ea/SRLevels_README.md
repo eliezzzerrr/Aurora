@@ -4,11 +4,14 @@ MetaTrader 5 Expert Advisor for gold. A **separate system** from TrendEMA: its o
 magic number (9101), its own kill switch (`SRLEVELS_STOP.txt`), its own heartbeat
 (`SRLEVELS_HEARTBEAT.txt`). Attach to a **15M** chart on the gold symbol.
 
-Current version: **`SRLevels_EA_v1.3.mq5`**: fixed **3R target** with the stop beyond the
-traded zone (capped at 10.00), breakeven 1.5R, and the **4H gate off** (`TrendMode =
-TREND_NONE`, `BlockOpposingEntries = false`), so it buys S1/S2 and sells R1/R2 at the same time
-the way the coach's charts do. Four versions shipped on 10 Sep: v1.0.1 (3R, gated), v1.1
-(next-zone, gated), v1.2 (next-zone, ungated), v1.3 (3R, ungated). The operator's real-tick
+Current version: **`SRLevels_EA_v1.5.mq5`**: **target at the first level beyond the entry
+(R1 for an S1 buy), never under 2R** (`TPMode = TP_NEXT_ZONE`, `MinRR = 2.0`,
+`ExtendToMinRR = true`; a level closer than 2R moves the target out to 2R instead of skipping
+the trade), stop beyond the traded zone (capped at 10.00), breakeven 1.5R, and the **4H gate
+off** (`TrendMode = TREND_NONE`, `BlockOpposingEntries = false`), so it buys S1/S2 and sells
+R1/R2 at the same time the way the coach's charts do. Six versions shipped on 10 Sep: v1.0.1
+(3R, gated), v1.1 (next-zone, gated), v1.2 (next-zone, ungated), v1.3 (3R, ungated), v1.4 (3R
+else 2R, ungated; minute-bar 2026: −1,514, PF 0.83), v1.5 (level target with a 2R floor). The operator's real-tick
 tests on XAUUSDc gave PF 0.86 for the gated 3R build and PF 1.05 for the gated next-zone build;
 the ungated modes have no real-tick result yet. See **Backtests**.
 

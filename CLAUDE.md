@@ -10,6 +10,7 @@ Two independent systems that share a repo and a symbol (XAUUSD) and nothing else
 |---|---|---|
 | **Aurora** | An ICT/SMC *advisory* subagent. Reads chart screenshots, runs an 8-point checklist, emits a signal or NO-TRADE, logs to a journal. Places no orders. | `.claude/agents/aurora.md`, `doctrine/`, `patterns/`, `trades/`, `playbook.md` |
 | **TrendEMA EA** | A MetaTrader 5 Expert Advisor that trades **real money, automatically**, on `XAUUSDc`. | `ea/` |
+| **SRLevels EA** | A second, independent MT5 EA: 4H trend, resting limits at ranked support/resistance zones. Magic 9101, kill switch `SRLEVELS_STOP.txt`. Not yet attached live. | `ea/SRLevels_*`, `ea/SRLevels_README.md` |
 
 Do not blend their doctrine. Aurora's killzones, grading rubric and 8-point checklist have no bearing on the EA, and the EA's triggers are not Aurora patterns.
 

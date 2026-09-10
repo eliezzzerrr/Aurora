@@ -4,7 +4,9 @@ MetaTrader 5 Expert Advisor for gold. A **separate system** from TrendEMA: its o
 magic number (9101), its own kill switch (`SRLEVELS_STOP.txt`), its own heartbeat
 (`SRLEVELS_HEARTBEAT.txt`). Attach to a **15M** chart on the gold symbol.
 
-Current version: **`SRLevels_EA_v1.0.mq5`**.
+Current version: **`SRLevels_EA_v1.1.mq5`** (next-zone geometry). v1.0.1 shipped the 3R
+geometry for one afternoon; the operator's real-tick test on XAUUSDc (PF 0.86, 220 trades)
+reversed it the same day. See **Backtests**.
 
 > Kill switch: drop `SRLEVELS_STOP.txt` into `MQL5\Files` and the EA cancels its
 > limits and stops placing orders. Open positions keep their SL/TP at the broker.
@@ -119,10 +121,18 @@ Per trade, the best 3R variant made 0.02% (2026) and 0.037% (2025) of equity aga
 0.056% and 0.043% for the next-zone target. 2025 was a trend year and flatters every
 long-target setting; 2026 takes it back.
 
-**The operator chose 3R anyway, with the numbers in front of them (10 Sep 2026).** The
-shipped defaults are therefore `TPMode = TP_FIXED_RR`, `FixedRR = 3.0`, `SLMode = SL_ZONE`,
-`MaxSLPips = 1000`. To get the next-zone build back: `TPMode = TP_NEXT_ZONE`,
-`MinRR = 0.6`, `SLMode = SL_NEXT_LEVEL`, `MaxSLPips = 2500`.
+**The operator chose 3R anyway (v1.0.1, 10 Sep 2026), then ran it on the live terminal
+with 100% real ticks on XAUUSDc, 1 Jan – 9 Sep 2026:** 220 trades, −296.58, PF 0.86; 41
+targets, 139 full stops, 40 breakeven scratches. A quarter of the trades were over inside six
+minutes (limit fills on a spike, the tight zone stop goes in the same move), and fills between
+22:00 and 02:00 server time ran 12 won / 47 lost. The 2.0 lot cap bound on every trade because
+the tester deposits USD against a symbol that pays in cents; set `MaxLotSizeCap = 0` for tester
+runs on XAUUSDc.
+
+**v1.1 therefore ships the next-zone geometry**: `TPMode = TP_NEXT_ZONE`, `MinRR = 0.6`,
+`SLMode = SL_NEXT_LEVEL`, `MaxSLPips = 2500`, breakeven 1.5R. It has not yet been run on real
+ticks. The 3R build is four fields away: `TPMode = TP_FIXED_RR`, `FixedRR = 3.0`,
+`SLMode = SL_ZONE`, `MaxSLPips = 1000`.
 
 The honest summary: the edge is thin. Profit factor 1.16 out of sample, a win rate about
 four points above its own breakeven. Fifty live trades will not tell you whether it is real.

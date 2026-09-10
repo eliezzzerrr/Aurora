@@ -4,7 +4,9 @@ MetaTrader 5 Expert Advisor for gold. A **separate system** from TrendEMA: its o
 magic number (9101), its own kill switch (`SRLEVELS_STOP.txt`), its own heartbeat
 (`SRLEVELS_HEARTBEAT.txt`). Attach to a **15M** chart on the gold symbol.
 
-Current version: **`SRLevels_EA_v1.6.mq5`**: side from the **4H close against EMA9**
+Current version: **`SRLevels_EA_v1.7.mq5`**: v1.6 plus **15M swing points as a level source**
+(`UseEntryPivots`, weight 2.5 recency-scaled, 2-day lookback), so the intraday levels the coach
+marks on his 15M chart appear as zones. v1.6: side from the **4H close against EMA9**
 (`TrendMode = TREND_EMA_ONLY`: above = buy limits only, below = sell limits only; a flip
 cancels the resting limits), **target at the first level beyond the entry, never under 2R**
 (`TPMode = TP_NEXT_ZONE`, `MinRR = 2.0`, `ExtendToMinRR = true`), stop beyond the traded zone

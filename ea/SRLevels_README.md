@@ -4,9 +4,11 @@ MetaTrader 5 Expert Advisor for gold. A **separate system** from TrendEMA: its o
 magic number (9101), its own kill switch (`SRLEVELS_STOP.txt`), its own heartbeat
 (`SRLEVELS_HEARTBEAT.txt`). Attach to a **15M** chart on the gold symbol.
 
-Current version: **`SRLevels_EA_v1.1.mq5`** (next-zone geometry). v1.0.1 shipped the 3R
-geometry for one afternoon; the operator's real-tick test on XAUUSDc (PF 0.86, 220 trades)
-reversed it the same day. See **Backtests**.
+Current version: **`SRLevels_EA_v1.2.mq5`**: next-zone geometry, **4H gate off** (`TrendMode =
+TREND_NONE`, `BlockOpposingEntries = false`), so it buys S1/S2 and sells R1/R2 at the same time
+the way the coach's charts do. The gated versions v1.0 to v1.1 ran for one afternoon on 10 Sep;
+the operator's real-tick tests on XAUUSDc gave PF 0.86 for the 3R build and PF 1.05 for the
+next-zone build, and the ungated mode has no real-tick result yet. See **Backtests**.
 
 > Kill switch: drop `SRLEVELS_STOP.txt` into `MQL5\Files` and the EA cancels its
 > limits and stops placing orders. Open positions keep their SL/TP at the broker.

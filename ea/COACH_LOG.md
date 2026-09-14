@@ -82,7 +82,31 @@ pivots from H1 and H4 only. **Drove v1.7** (`UseEntryPivots`, 15M swings as a so
 | His invalidation is the **Daily** EMA9 | v1.8, `TrendEMATF = PERIOD_D1` |
 | He rests limits at every tier; the EA's nearest tier kept getting sliced | v1.9, rejection on tier 1 only (operator's idea, best of four tested) |
 
-## Open gaps — candidates, none tested yet
+## Tested and rejected — 14 Sep 2026
+
+All four level-source gaps below were built (v1.10) and tested the same afternoon. **Every
+one lost money in both years**, so all four ship defaulted off. Minute bars, per-tier
+entries, cap 3, lot cap lifted:
+
+| | 2026 Jan–Sep | 2025 |
+|---|---|---|
+| Baseline (v1.9.1 sources) | −517, PF 0.96, DD 12.0% | +3,463, PF 1.14, DD 9.7% |
+| All four added | −1,524, PF 0.88, DD 18.9% | +2,222, PF 1.10 |
+| Daily pivots only | −1,212 | +2,316 |
+| Round numbers only | −1,134 | +2,903 |
+| Daily fib only | −693 | +3,226 |
+| Daily cloud only | −517 (no change) | +3,140 |
+
+The trade count barely moved, 482 to 486 in 2026, so these did not add trades. They shifted
+the boundaries and the ranking of zones already being traded, and shifted them worse. Nearly
+all the damage landed in tier 2: −1,169 to −1,914 in 2026.
+
+**This settles a standing question.** The gap between the EA and the coach is not the level
+list. He uses more sources, the EA can now use the same ones, and copying them makes results
+worse. Whatever he does that works lives in the judgment and the geometry, not in what he
+draws on the chart.
+
+## Open gaps — still untested
 
 1. **Fib is computed on the H4, his is on the Daily.** `CollectFib` scans `FibSwingBars` bars
    of `TrendTF`. His 0.618 at 4,230.98 and 0.786 at 4,104.30 are Daily and invisible to the EA.

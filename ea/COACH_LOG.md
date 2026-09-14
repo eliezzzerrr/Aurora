@@ -80,6 +80,7 @@ pivots from H1 and H4 only. **Drove v1.7** (`UseEntryPivots`, 15M swings as a so
 | His intraday levels are 15M swings | v1.7, 15M pivot source |
 | His bands are lines and ~5.00 zones whatever the ATR | v1.7.2, fixed 250-pip merge |
 | His invalidation is the **Daily** EMA9 | v1.8, `TrendEMATF = PERIOD_D1` |
+| He rests limits at every tier; the EA's nearest tier kept getting sliced | v1.9, rejection on tier 1 only (operator's idea, best of four tested) |
 
 ## Open gaps — candidates, none tested yet
 

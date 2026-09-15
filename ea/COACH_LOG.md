@@ -8,6 +8,45 @@ Levels are price, not pips. 1 pip = 0.01.
 
 ---
 
+## 2026-09-15 07:23 — bounce off the Daily MA50, and a stand-down order
+
+> Gold did bounce from MA50 4,275 in the Daily chart yesterday after breaking down from 4,300
+> due to the market expectation that FED will raise interest rate by 25 basis pts on Sept 16.
+> Market expect 86% that FED will Raise interest rate (Bearish for Gold) based on FED CME
+> Watch tool. Pres. Trump intervention may confuse the market and the entire narrative for
+> Head and Shoulders Bearish reversal pattern maybe invalidated once the FED decided to Hold
+> interest rate (Bullish for Gold) instead of raising it on Sept. 16. Gold really needs to
+> trade back above EMA9 in the Daily chart (Current value 4,356) to totally invalidate any
+> potential bearish reversal. A further breakdown below MA50 in the Daily chart will further
+> confirm a trend reversal w/in the previous breakout level 4,200-4,220 (first) and
+> 4,100-4,050 (2nd).
+
+And, in a second post eleven minutes later:
+
+> It would be prudent to resume the follow my trading template **after Sept. 16 meeting** to
+> ensure a more clearer market direction after the most important event this week.
+
+| His level | EA zone at 09:03 | |
+|---|---|---|
+| R3 4,322–4,338 | not ranked | above the EA window |
+| R2 4,313–4,317 | not ranked | above the EA window |
+| R1 4,306 | not ranked | EA tops out at 4,301.76 |
+| — | R1 4,291.46–4,292.08 (4.8) | EA extra |
+| — | R2 4,294.98–4,297.98 (6.2) | EA extra |
+| — | R3 4,300.52–4,301.76 (3.4) | EA extra |
+| S1 4,282 | S1 4,282.23–4,283.67 (4.0) | near exact |
+| MA50 D1 4,275 | nothing | EA has the MA50 D1 as a source but it did not cluster |
+| S2 4,264–4,272 | S3 4,263.46–4,264.09 (2.4) | bottom of his band |
+| S3 4,253 | not ranked | below the EA window |
+
+Both sides agree on SELL. His Daily EMA9 reads 4,356 live; the EA reads 4,377.38 because it
+takes the closed-bar value at shift 1.
+
+**The stand-down is the part the EA cannot act on.** It has no news awareness and will trade
+through the FOMC decision at 02:00 Manila on 16 Sep. Sitting it out means dropping
+`SRLEVELS_STOP.txt` into `MQL5\Files` by hand, which cancels resting limits and blocks new
+ones but does not close an open position.
+
 ## 2026-09-14 07:25 — gap down, H&S still pending
 
 > Gold gap down today as a result of continuous escalation of US and Iran War (Oil still

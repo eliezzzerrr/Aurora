@@ -35,6 +35,18 @@ Side agrees: EA reads Daily close 4,288.29 against Daily EMA9 4,359.56, he quote
 4,100–4,050. The EA sells rallies for 2R a time inside a 45.00 window and will keep doing that
 through the same move.
 
+**What the day did, logged at 21:48.** The opposite of the call. Gold rallied about 100.00,
+from 4,283 to 4,380, on the day of the FED decision. Price closed the session roughly 36.00
+above the Daily EMA9 at 4,344, which is his own stated invalidation for the bearish case; if
+the daily candle finishes there the EA flips to BUY at the close.
+
+The EA sold into that rally exactly once: 0.12 lots at 4,321.90, stopped at 4,330.26 for
+−100.30. It placed 29 limits and cancelled 12 of them on re-rank as price climbed through them.
+Without the re-rank those orders would have filled in sequence, two slots at a time, for
+something like six or seven consecutive stops. The re-rank behaviour the operator chose to keep
+on 16 Sep earned its keep the same day. The NY blackout took over at 08:00 ET and cancelled the
+last two resting limits.
+
 ## 2026-09-15 07:23 — bounce off the Daily MA50, and a stand-down order
 
 > Gold did bounce from MA50 4,275 in the Daily chart yesterday after breaking down from 4,300

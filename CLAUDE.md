@@ -4,13 +4,14 @@ Guidance for Claude Code working in this repository.
 
 ## What lives here
 
-Two independent systems that share a repo and a symbol (XAUUSD) and nothing else:
+Three independent systems that share a repo and a symbol (XAUUSD) and nothing else:
 
 | | What it is | Where |
 |---|---|---|
 | **Aurora** | An ICT/SMC *advisory* subagent. Reads chart screenshots, runs an 8-point checklist, emits a signal or NO-TRADE, logs to a journal. Places no orders. | `.claude/agents/aurora.md`, `doctrine/`, `patterns/`, `trades/`, `playbook.md` |
 | **TrendEMA EA** | A MetaTrader 5 Expert Advisor that trades **real money, automatically**, on `XAUUSDc`. | `ea/` |
 | **SRLevels EA** | A second, independent MT5 EA: 4H trend, resting limits at ranked support/resistance zones. Magic 9101, kill switch `SRLEVELS_STOP.txt`. Attached to the **live** account since 10 Sep 2026, so the deploy rules below apply to it too. | `ea/SRLevels_*`, `ea/SRLevels_README.md` |
+| **TripleEMA Trend** | A third MT5 EA: M1 scalper on a 9/21/50 EMA stack, pullback-and-recross entry, SL at EMA50, TP 1.5R (40% breakeven). Magic 7333, kill switch `TRIPLEEMA_STOP.txt`. Built 16 Sep 2026 to replace TrendEMA; no backtest yet. | `ea/TripleEMA_*`, `ea/TripleEMA_README.md` |
 
 Do not blend their doctrine. Aurora's killzones, grading rubric and 8-point checklist have no bearing on the EA, and the EA's triggers are not Aurora patterns.
 

@@ -27,7 +27,8 @@
 //    2. A bar has CLOSED BELOW EMA9 since the last entry - the pullback.
 //       Without this, every bar of a trend that closes above EMA9
 //       qualifies and the EA is simply always-in, which is not a scalp.
-//       (RequirePullback=false removes the condition if wanted.)
+//       (v1.3: EntryMode chooses the qualifier - see that input. Default
+//       is ANY_CLOSE, the rule as the operator stated it, with no pullback.)
 //    3. The last closed bar closed ABOVE EMA9 and was bullish
 //       (close > open). Then BUY at market on the new bar.
 //
@@ -62,10 +63,20 @@
 //  open position - that keeps its SL/TP on the broker. Demo first.
 //+------------------------------------------------------------------+
 #property copyright "Aurora TripleEMA Trend EA"
-#property version   "1.01"   // file is TripleEMA_Trend_v1.0.1 - bump both together
+#property version   "1.32"   // file is TripleEMA_Trend_v1.3.2 - bump both together
 #property description "M1 scalper: EMA 9/21/50 stack sets direction, pullback below/above EMA9 then a same-colour close re-crossing it triggers a market entry. SL at EMA50, TP 1.5R."
 
 #include <Trade\Trade.mqh>
+
+//+------------------------------------------------------------------+
+//| v1.3: how an entry is qualified once the stack is right            |
+//+------------------------------------------------------------------+
+enum ENUM_ENTRY_MODE
+  {
+   ENTRY_ANY_CLOSE,           // Any same-colour close across EMA9 while flat (the operator spec, default)
+   ENTRY_FIRST_THEN_PULLBACK, // First close after the stack forms, then a pullback before each later entry
+   ENTRY_PULLBACK_ONLY        // A close on the far side of EMA9 required before EVERY entry (v1.0-v1.2 rule)
+  };
 
 //+------------------------------------------------------------------+
 //| INPUTS                                                            |
@@ -76,7 +87,24 @@ input int    EmaFastPeriod      = 9;           // Fast EMA
 input int    EmaMidPeriod       = 21;          // Middle EMA
 input int    EmaSlowPeriod      = 50;          // Slow EMA (stop-loss anchor)
 input bool   RequireCandleColor = true;        // Trigger bar must close in the trade direction
-input bool   RequirePullback    = true;        // Need a close on the far side of EMA9 before each entry
+//--- v1.3: the pullback requirement was an addition of mine, not part of the
+//    spec, and checked against the eight example trades it fails three of
+//    the seven winners including the two largest. Two of those (05:31 long,
+//    07:55 short on 16 Sep) were the FIRST confirmation bar after the stack
+//    formed - a pullback inside the new stack cannot exist yet, and clearing
+//    the arms on the flip made those entries impossible. The third (06:02)
+//    was a continuation with no close below EMA9. So the qualifier is now a
+//    choice, defaulting to the rule as the operator stated it. The tester,
+//    not the sample, should pick between them.
+input ENUM_ENTRY_MODE EntryMode = ENTRY_ANY_CLOSE; // What qualifies an entry once the stack is right
+//--- v1.1: operator rule, 16 Sep - one position, and the NEXT entry only
+//    after the trade is closed. The position cap already enforced the first
+//    half. The second half needed this: a pullback seen WHILE a trade was
+//    open used to leave the side armed, so the first bullish close after a
+//    TP fired immediately with no pullback in between - a chase off the
+//    exit, not the pullback-then-entry the method describes. Now every
+//    close wipes both arms and the full cycle is required again.
+input bool   ResetArmOnClose    = true;        // A closed trade clears the arm: fresh pullback needed before the next entry
 
 input group "=== GEOMETRY ==="
 input double RewardRatio        = 1.5;         // TP = this x SL distance (1.5 -> 40% breakeven)
@@ -121,6 +149,12 @@ input string EmergencyStopFile  = "TRIPLEEMA_STOP.txt";      // Kill-switch file
 
 input group "=== DISPLAY ==="
 input bool   ShowPanel          = true;        // Show the on-chart status panel
+//--- v1.2: the 9/21/50 EMAs on the chart in the colours the operator uses
+//    (yellow / red / blue), via the companion indicator TripleEMA_Lines.
+//    Drawn ONLY while the chart timeframe equals EntryTF: M1 lines on an H1
+//    chart would be meaningless, and H1 lines would show a trend the EA does
+//    not trade. On any other timeframe the panel says why they are hidden.
+input bool   DrawEmas           = true;        // Draw the EMAs (needs TripleEMA_Lines.ex5 in MQL5\Indicators)
 input int    PanelX             = 12;          // Panel X offset (pixels)
 input int    PanelY             = 22;          // Panel Y offset (pixels)
 input int    PanelFontSize      = 9;           // Panel font size
@@ -180,6 +214,21 @@ int      gDayTrades = 0, gDayWins = 0, gDayLosses = 0;
 datetime gLastLossTime = 0;
 int      gAllWins = 0, gAllLosses = 0, gAllStreak = 0, gAllBestWin = 0, gAllWorstLoss = 0;
 double   gAllGrossWin = 0.0, gAllGrossLoss = 0.0;   // gross loss stored POSITIVE
+//--- v1.1: trade durations, paired IN->OUT by position id. The operator
+//    asked for the average time in trade; the win/loss split is the useful
+//    part - with the stop nearer than the target, losers should die fast
+//    and winners run, and a drift in either says something about the tape.
+long     gAllDurSum = 0, gWinDurSum = 0, gLossDurSum = 0, gDayDurSum = 0;
+int      gAllDurN = 0,   gWinDurN = 0,   gLossDurN = 0,   gDayDurN = 0;
+
+//--- v1.2: EMA lines on the chart
+int      hLines = INVALID_HANDLE;
+bool     gLinesOnChart = false;
+string   gLinesName = "";
+bool     gLinesWarned = false;
+uint     gLinesRetryMs = 0;   // v1.3.1: throttle for the add-to-chart retry
+int      gLinesFails   = 0;   // v1.3.2: consecutive add failures (recreate the handle after a run of them)
+uint     gLinesLastLogMs = 0; // v1.3.2: at most one "still retrying" line per minute
 
 //--- panel
 int      gPanelMaxW = 0;
@@ -339,6 +388,9 @@ void RefreshAllTimeStats()
    if(!HistorySelect(0, TimeCurrent() + 60)) return;
    gAllWins = 0; gAllLosses = 0; gAllStreak = 0; gAllBestWin = 0; gAllWorstLoss = 0;
    gAllGrossWin = 0.0; gAllGrossLoss = 0.0;
+   gAllDurSum = 0; gWinDurSum = 0; gLossDurSum = 0; gDayDurSum = 0;
+   gAllDurN = 0;   gWinDurN = 0;   gLossDurN = 0;   gDayDurN = 0;
+   long     inPos[];  datetime inTime[];   // open legs awaiting their close
    int total = HistoryDealsTotal();
    for(int i = 0; i < total; i++)
      {
@@ -346,17 +398,39 @@ void RefreshAllTimeStats()
       if(t == 0) continue;
       if(HistoryDealGetInteger(t, DEAL_MAGIC) != MagicNumber) continue;
       if(HistoryDealGetString(t, DEAL_SYMBOL) != _Symbol)     continue;
-      if((ENUM_DEAL_ENTRY)HistoryDealGetInteger(t, DEAL_ENTRY) != DEAL_ENTRY_OUT) continue;
+      ENUM_DEAL_ENTRY de = (ENUM_DEAL_ENTRY)HistoryDealGetInteger(t, DEAL_ENTRY);
+      long     posId = HistoryDealGetInteger(t, DEAL_POSITION_ID);
+      datetime dTime = (datetime)HistoryDealGetInteger(t, DEAL_TIME);
+      if(de == DEAL_ENTRY_IN)
+        {
+         int n = ArraySize(inPos);
+         ArrayResize(inPos, n + 1); ArrayResize(inTime, n + 1);
+         inPos[n] = posId; inTime[n] = dTime;
+         continue;
+        }
+      if(de != DEAL_ENTRY_OUT && de != DEAL_ENTRY_INOUT) continue;
+      //--- duration: find the IN leg of this position (linear scan; a few
+      //    hundred trades at most, and history is chronological)
+      long dur = -1;
+      for(int k = ArraySize(inPos) - 1; k >= 0; k--)
+         if(inPos[k] == posId) { dur = (long)(dTime - inTime[k]); break; }
+      if(dur >= 0)
+        {
+         gAllDurSum += dur; gAllDurN++;
+         if(dTime >= gDayStart) { gDayDurSum += dur; gDayDurN++; }
+        }
       double net = HistoryDealGetDouble(t, DEAL_PROFIT) + HistoryDealGetDouble(t, DEAL_SWAP) + HistoryDealGetDouble(t, DEAL_COMMISSION);
       if(net > 0.0)
         {
          gAllWins++; gAllGrossWin += net;
+         if(dur >= 0) { gWinDurSum += dur; gWinDurN++; }
          gAllStreak = (gAllStreak > 0) ? gAllStreak + 1 : 1;
          if(gAllStreak > gAllBestWin) gAllBestWin = gAllStreak;
         }
       else if(net < 0.0)
         {
          gAllLosses++; gAllGrossLoss += -net;
+         if(dur >= 0) { gLossDurSum += dur; gLossDurN++; }
          gAllStreak = (gAllStreak < 0) ? gAllStreak - 1 : -1;
          if(gAllStreak < gAllWorstLoss) gAllWorstLoss = gAllStreak;
         }
@@ -568,8 +642,21 @@ void Fire(const int dir)
    double fill = gTrade.ResultPrice();
    if(fill > 0.0 && MathAbs(fill - price) >= gTick)
      {
-      double sl2 = SnapPrice((dir > 0) ? fill - slDist : fill + slDist);
-      double tp2 = SnapPrice((dir > 0) ? fill + RewardRatio * slDist : fill - RewardRatio * slDist);
+      //--- v1.3.1: the stop is STRUCTURAL in this strategy - "on the EMA50" -
+      //    so it stays at slLevel however the fill slipped, and only the
+      //    target moves, so the trade still pays RewardRatio on the distance
+      //    actually being risked. v1.3 inherited the TrendEMA re-anchor, which
+      //    preserves pip DISTANCE and therefore walked the stop off the
+      //    structure by the slippage: first live fill, 16 Sep 22:57, ask at
+      //    send ~4349.53, filled 4349.73, EMA50 4342.71 - the stop landed at
+      //    4342.86, fifteen pips ABOVE the line it was meant to sit under.
+      //    Risk moves with the slip instead (adverse slip = slightly more
+      //    risk, favourable = slightly less); the log prints the real figure.
+      double slDist2 = MathAbs(fill - slLevel);
+      double sl2 = SnapPrice(slLevel);
+      double tp2 = SnapPrice((dir > 0) ? fill + RewardRatio * slDist2 : fill - RewardRatio * slDist2);
+      riskPct *= (slDist2 / slDist);
+      slPips   = slDist2 / gPip;
       ulong posTicket = gTrade.ResultOrder();
       // find the position by magic/symbol opened just now
       for(int i = PositionsTotal() - 1; i >= 0; i--)
@@ -580,7 +667,8 @@ void Fire(const int dir)
          if(PositionGetString(POSITION_SYMBOL) != _Symbol)     continue;
          if(MathAbs(PositionGetDouble(POSITION_PRICE_OPEN) - fill) > gTick) continue;
          if(gTrade.PositionModify(t, sl2, tp2))
-            PrintFormat("[T3EMA] Re-anchored #%I64u to fill %.2f: SL %.2f TP %.2f", t, fill, sl2, tp2);
+            PrintFormat("[T3EMA] Slipped %.0fp on fill (%.2f -> %.2f). Stop kept on EMA50 at %.2f, TP moved to %.2f (%.1fR on %.0fp), risk now %.2f%%.",
+                        MathAbs(fill - price) / gPip, price, fill, sl2, tp2, RewardRatio, slPips, riskPct);
          break;
         }
       sl = sl2; tp = tp2; price = fill;
@@ -602,8 +690,17 @@ void Fire(const int dir)
 void Evaluate()
   {
    //--- a stack change clears any pending arm: a pullback inside the OLD
-   //    trend is not a setup in the new one
-   if(gStack != gLastStack) { gArmBuy = false; gArmSell = false; }
+   //    trend is not a setup in the new one. In FIRST_THEN_PULLBACK the new
+   //    stack arrives pre-armed, so its first confirmation bar can enter.
+   if(gStack != gLastStack)
+     {
+      gArmBuy = false; gArmSell = false;
+      if(EntryMode == ENTRY_FIRST_THEN_PULLBACK)
+        {
+         if(gStack > 0) gArmBuy  = true;
+         if(gStack < 0) gArmSell = true;
+        }
+     }
    gLastStack = gStack;
 
    if(gStack == 0)
@@ -620,12 +717,14 @@ void Evaluate()
       if(gClose1 < gEmaF1)
         {
          gArmBuy = true;
-         gArmText = "BUY armed - closed below EMA9, waiting for a bullish close back above";
-         SetStatus("ARMED", "BUY - pullback under EMA9 seen", clrDeepSkyBlue);
+         gArmText = (EntryMode == ENTRY_ANY_CLOSE)
+                    ? "BULL stack - last bar closed below EMA9, next bullish close above it enters"
+                    : "BUY armed - closed below EMA9, waiting for a bullish close back above";
+         SetStatus(EntryMode == ENTRY_ANY_CLOSE ? "WAIT" : "ARMED", "BUY - last close under EMA9", clrDeepSkyBlue);
          return;
         }
       bool colourOk = !RequireCandleColor || gClose1 > gOpen1;
-      bool armOk    = !RequirePullback    || gArmBuy;
+      bool armOk    = (EntryMode == ENTRY_ANY_CLOSE) || gArmBuy;
       if(gClose1 > gEmaF1 && colourOk && armOk)
         {
          if(!EntryGatesOpen(why)) { SetStatus("BLOCKED", "BUY signal but " + why, clrOrange); return; }
@@ -634,9 +733,17 @@ void Evaluate()
          gArmText = "BUY fired - needs a new pullback";
          return;
         }
-      gArmText = gArmBuy ? "BUY armed - waiting for a bullish close above EMA9"
-                         : "BULL stack - waiting for a pullback below EMA9";
-      SetStatus("WAIT", gArmBuy ? "BUY armed, last bar not a bullish close above EMA9" : "bull stack, no pullback yet", PanelTextColor);
+      if(EntryMode == ENTRY_ANY_CLOSE)
+        {
+         gArmText = "BULL stack - next bullish close above EMA9 enters";
+         SetStatus("WAIT", "bull stack, last bar not a bullish close above EMA9", PanelTextColor);
+        }
+      else
+        {
+         gArmText = gArmBuy ? "BUY armed - waiting for a bullish close above EMA9"
+                            : "BULL stack - waiting for a pullback below EMA9";
+         SetStatus("WAIT", gArmBuy ? "BUY armed, last bar not a bullish close above EMA9" : "bull stack, no pullback yet", PanelTextColor);
+        }
       return;
      }
 
@@ -645,12 +752,14 @@ void Evaluate()
    if(gClose1 > gEmaF1)
      {
       gArmSell = true;
-      gArmText = "SELL armed - closed above EMA9, waiting for a bearish close back below";
-      SetStatus("ARMED", "SELL - pullback over EMA9 seen", clrDeepSkyBlue);
+      gArmText = (EntryMode == ENTRY_ANY_CLOSE)
+                 ? "BEAR stack - last bar closed above EMA9, next bearish close below it enters"
+                 : "SELL armed - closed above EMA9, waiting for a bearish close back below";
+      SetStatus(EntryMode == ENTRY_ANY_CLOSE ? "WAIT" : "ARMED", "SELL - last close over EMA9", clrDeepSkyBlue);
       return;
      }
    bool colourOkS = !RequireCandleColor || gClose1 < gOpen1;
-   bool armOkS    = !RequirePullback    || gArmSell;
+   bool armOkS    = (EntryMode == ENTRY_ANY_CLOSE) || gArmSell;
    if(gClose1 < gEmaF1 && colourOkS && armOkS)
      {
       if(!EntryGatesOpen(why)) { SetStatus("BLOCKED", "SELL signal but " + why, clrOrange); return; }
@@ -659,9 +768,17 @@ void Evaluate()
       gArmText = "SELL fired - needs a new pullback";
       return;
      }
-   gArmText = gArmSell ? "SELL armed - waiting for a bearish close below EMA9"
-                       : "BEAR stack - waiting for a pullback above EMA9";
-   SetStatus("WAIT", gArmSell ? "SELL armed, last bar not a bearish close below EMA9" : "bear stack, no pullback yet", PanelTextColor);
+   if(EntryMode == ENTRY_ANY_CLOSE)
+     {
+      gArmText = "BEAR stack - next bearish close below EMA9 enters";
+      SetStatus("WAIT", "bear stack, last bar not a bearish close below EMA9", PanelTextColor);
+     }
+   else
+     {
+      gArmText = gArmSell ? "SELL armed - waiting for a bearish close below EMA9"
+                          : "BEAR stack - waiting for a pullback above EMA9";
+      SetStatus("WAIT", gArmSell ? "SELL armed, last bar not a bearish close below EMA9" : "bear stack, no pullback yet", PanelTextColor);
+     }
   }
 
 //+------------------------------------------------------------------+
@@ -722,6 +839,16 @@ void PanelRow(const int row, const string label, const string value, const color
       ObjectDelete(0, PFX + "PV" + IntegerToString(row));
   }
 
+string FmtDur(const long secs)
+  {
+   if(secs < 0)     return("--");
+   if(secs < 60)    return(StringFormat("%ds", (int)secs));
+   if(secs < 3600)  return(StringFormat("%dm", (int)(secs / 60)));
+   return(StringFormat("%dh %02dm", (int)(secs / 3600), (int)((secs % 3600) / 60)));
+  }
+
+string AvgDur(const long sum, const int n) { return(n > 0 ? FmtDur(sum / n) : "--"); }
+
 string WinRateText(const int w, const int l)
   {
    int n = w + l;
@@ -732,7 +859,34 @@ string WinRateText(const int w, const int l)
 void DrawPanel()
   {
    if(!ShowPanel) return;
+   //--- measure with the font the labels actually use, or the box is sized
+   //    against the default font and comes out the wrong width
+   TextSetFont("Consolas", -PanelFontSize * 10);
    gPanelMaxW = 0;
+
+   //--- v1.1.1: the background is created FIRST and drawn in FRONT of the
+   //    chart. MT5 paints objects in creation order, so a box created after
+   //    the labels would cover them; and OBJPROP_BACK=true puts an object
+   //    behind the price bars, which is exactly what v1.1 did - the panel
+   //    text floated over a chart that showed straight through it. Same
+   //    arrangement TrendEMA settled on. XSIZE/YSIZE are set at the END of
+   //    this function once the real row count and text extents are known.
+   const int rowH = PanelFontSize + 7;
+   string bg = PFX + "BG";
+   if(ObjectFind(0, bg) < 0)
+     {
+      ObjectCreate(0, bg, OBJ_RECTANGLE_LABEL, 0, 0, 0);
+      ObjectSetInteger(0, bg, OBJPROP_CORNER,      CORNER_LEFT_UPPER);
+      ObjectSetInteger(0, bg, OBJPROP_BORDER_TYPE, BORDER_FLAT);
+      ObjectSetInteger(0, bg, OBJPROP_COLOR,       C'60,66,80');
+      ObjectSetInteger(0, bg, OBJPROP_SELECTABLE,  false);
+      ObjectSetInteger(0, bg, OBJPROP_HIDDEN,      true);
+     }
+   ObjectSetInteger(0, bg, OBJPROP_BACK,      false);   // every draw, not only on create
+   ObjectSetInteger(0, bg, OBJPROP_XDISTANCE, PanelX - 6);
+   ObjectSetInteger(0, bg, OBJPROP_YDISTANCE, PanelY - 4);
+   ObjectSetInteger(0, bg, OBJPROP_BGCOLOR,   PanelBgColor);
+
    int r = 0;
    const color sep = C'70,76,90';
    string acct = (AccountInfoInteger(ACCOUNT_TRADE_MODE) == ACCOUNT_TRADE_MODE_DEMO) ? "DEMO" : "REAL";
@@ -766,11 +920,12 @@ void DrawPanel()
       if(PositionGetString(POSITION_SYMBOL) != _Symbol)     continue;
       bool isBuy = (PositionGetInteger(POSITION_TYPE) == POSITION_TYPE_BUY);
       double pl = PositionGetDouble(POSITION_PROFIT) + PositionGetDouble(POSITION_SWAP);
-      PanelRow(r++, "  OPEN", StringFormat("%s %.2f @ %s  SL %s  TP %s  %+.2f", isBuy ? "BUY " : "SELL",
+      long age = (long)(TimeCurrent() - (datetime)PositionGetInteger(POSITION_TIME));
+      PanelRow(r++, "  OPEN", StringFormat("%s %.2f @ %s  SL %s  TP %s  %+.2f  %s", isBuy ? "BUY " : "SELL",
                                             PositionGetDouble(POSITION_VOLUME),
                                             DoubleToString(PositionGetDouble(POSITION_PRICE_OPEN), 2),
                                             DoubleToString(PositionGetDouble(POSITION_SL), 2),
-                                            DoubleToString(PositionGetDouble(POSITION_TP), 2), pl),
+                                            DoubleToString(PositionGetDouble(POSITION_TP), 2), pl, FmtDur(age)),
                PanelTextColor, pl >= 0 ? clrLime : clrTomato);
      }
    //--- what the next entry would look like from here
@@ -805,6 +960,11 @@ void DrawPanel()
                    beClr = (nowWR - beRate >= 0.0) ? clrLime : clrTomato; }
       PanelRow(r++, "WIN TARGET", beTxt, PanelTextColor, beClr);
      }
+   PanelRow(r++, "AVG TIME", StringFormat("all %s (%d)   wins %s   losses %s   today %s",
+                                           AvgDur(gAllDurSum, gAllDurN), gAllDurN,
+                                           AvgDur(gWinDurSum, gWinDurN), AvgDur(gLossDurSum, gLossDurN),
+                                           AvgDur(gDayDurSum, gDayDurN)),
+            PanelTextColor, PanelTextColor);
    double dayPct = (gDayStartBalance > 0.0) ? 100.0 * gDayPL / gDayStartBalance : 0.0;
    PanelRow(r++, "TODAY", StringFormat("%+.2f  (%+.2f%%)    %d trades%s", gDayPL, dayPct, gDayTrades,
                                         MaxDailyLossPercent > 0.0 ? StringFormat("   halt at -%.1f%%", MaxDailyLossPercent) : ""),
@@ -817,25 +977,21 @@ void DrawPanel()
    PanelRow(r++, "BAR USED", TimeToString(gLastBar - PeriodSeconds(EntryTF), TIME_MINUTES) + "  (server time, last closed bar)", PanelTextColor, clrDeepSkyBlue);
    double sp = CurrentSpreadPips();
    PanelRow(r++, "SPREAD", StringFormat("%.0f pips  %s", sp, sp > MaxSpreadPips ? "TOO WIDE" : "ok"), PanelTextColor, sp > MaxSpreadPips ? clrTomato : clrLime);
-
-   //--- background sized to content; stale rows from a taller previous draw removed
-   const int rowH = PanelFontSize + 7;
-   string bg = PFX + "BG";
-   if(ObjectFind(0, bg) < 0)
+   if(DrawEmas)
      {
-      ObjectCreate(0, bg, OBJ_RECTANGLE_LABEL, 0, 0, 0);
-      ObjectSetInteger(0, bg, OBJPROP_CORNER, CORNER_LEFT_UPPER);
-      ObjectSetInteger(0, bg, OBJPROP_BACK, true);
-      ObjectSetInteger(0, bg, OBJPROP_SELECTABLE, false);
-      ObjectSetInteger(0, bg, OBJPROP_HIDDEN, true);
-      ObjectSetInteger(0, bg, OBJPROP_BORDER_TYPE, BORDER_FLAT);
-      ObjectSetInteger(0, bg, OBJPROP_COLOR, C'60,66,80');
+      string lt; color lc;
+      if(gLinesOnChart)                         { lt = StringFormat("on chart  yellow %d / red %d / blue %d", EmaFastPeriod, EmaMidPeriod, EmaSlowPeriod); lc = clrLime; }
+      else if(ChartPeriod(0) != EntryTF)        { lt = StringFormat("hidden - chart is %s, switch to %s", StringSubstr(EnumToString(ChartPeriod(0)), 7), StringSubstr(EnumToString(EntryTF), 7)); lc = clrOrange; }
+      else if(hLines == INVALID_HANDLE)          { lt = "not drawn - iCustom failed, check MQL5/Indicators (retrying)"; lc = clrTomato; }
+      else if(BarsCalculated(hLines) <= 0)      { lt = "waiting for the indicator to calculate..."; lc = clrOrange; }
+      else                                      { lt = StringFormat("adding to chart... (%d failed, retrying every 5s)", gLinesFails); lc = clrOrange; }
+      PanelRow(r++, "EMA LINES", lt, PanelTextColor, lc);
      }
-   ObjectSetInteger(0, bg, OBJPROP_XDISTANCE, PanelX - 6);
-   ObjectSetInteger(0, bg, OBJPROP_YDISTANCE, PanelY - 4);
+
+   //--- size the background to what was actually drawn; remove stale rows
+   //    left over from a taller previous draw
    ObjectSetInteger(0, bg, OBJPROP_XSIZE, gPanelMaxW + 16);
    ObjectSetInteger(0, bg, OBJPROP_YSIZE, r * rowH + 8);
-   ObjectSetInteger(0, bg, OBJPROP_BGCOLOR, PanelBgColor);
    for(int dead = r; dead < gPanelRowsDrawn; dead++)
      {
       ObjectDelete(0, PFX + "PL" + IntegerToString(dead));
@@ -843,6 +999,126 @@ void DrawPanel()
      }
    gPanelRowsDrawn = r;
    ChartRedraw();
+  }
+
+//+------------------------------------------------------------------+
+//| EMA lines: add / remove the companion indicator as the chart TF     |
+//| moves onto or off EntryTF                                           |
+//+------------------------------------------------------------------+
+void SyncEmaLines()
+  {
+   if(!DrawEmas) return;
+   bool want = (ChartPeriod(0) == EntryTF);
+   if(want && !gLinesOnChart)
+     {
+      //--- v1.3.1: RETRY, throttled to every 5s, instead of warning once and
+      //    giving up. ChartIndicatorAdd from OnInit can fail while the previous
+      //    EA instance is still tearing its own indicator down: the v1.2 -> v1.3
+      //    re-attach on 16 Sep logged removed/loaded 7 ms apart, the add failed,
+      //    and v1.3 then never tried again - a transient hiccup became a
+      //    permanent blank, and the panel blamed a missing file that was there.
+      uint now = GetTickCount();
+      if(gLinesRetryMs != 0 && (now - gLinesRetryMs) < 5000) return;
+      gLinesRetryMs = now;
+
+      //--- v1.3.2: the short name is built here, identically to the indicator,
+      //    instead of being looked up by index after the add. ChartIndicatorName
+      //    by index returns whichever indicator happens to sit last, so v1.2 may
+      //    have recorded the wrong name and then failed to delete its own lines
+      //    on deinit - leaving an orphan on the chart. MT5 refuses to add a
+      //    second indicator with the same short name in the same window
+      //    (error 4114), which is what v1.3 and v1.3.1 then hit every 5s for
+      //    two minutes on 16 Sep.
+      string wantName = StringFormat("TripleEMA Lines(%d,%d,%d)", EmaFastPeriod, EmaMidPeriod, EmaSlowPeriod);
+
+      //--- 1. already on the chart (orphan from an earlier instance, or added
+      //       by hand)? Adopt it rather than fight it.
+      int existing = ChartIndicatorGet(0, 0, wantName);
+      if(existing != INVALID_HANDLE)
+        {
+         IndicatorRelease(existing);          // we only needed to know it is there
+         gLinesOnChart = true;
+         gLinesWarned  = false;
+         gLinesFails   = 0;
+         gLinesName    = wantName;
+         PrintFormat("[T3EMA] EMA lines already on the chart as %s - adopted, not re-added.", wantName);
+         return;
+        }
+
+      //--- 2. our own handle, created (or recreated after a run of failures)
+      if(hLines == INVALID_HANDLE)
+        {
+         ResetLastError();
+         hLines = iCustom(_Symbol, EntryTF, "TripleEMA_Lines", EmaFastPeriod, EmaMidPeriod, EmaSlowPeriod);
+         if(hLines == INVALID_HANDLE)
+           {
+            if(!gLinesWarned)
+              {
+               gLinesWarned = true;
+               PrintFormat("[T3EMA] iCustom(TripleEMA_Lines) failed, error %d - is TripleEMA_Lines.ex5 in MQL5\\Indicators? Retrying every 5s. Trading is unaffected.", GetLastError());
+              }
+            return;
+           }
+        }
+
+      //--- 3. the indicator must have finished at least one calculation before
+      //       the chart will accept it; calling ChartIndicatorAdd sooner is a
+      //       documented cause of 4114
+      int calc = BarsCalculated(hLines);
+      if(calc <= 0)
+        {
+         if(gLinesLastLogMs == 0 || (now - gLinesLastLogMs) > 60000)
+           {
+            gLinesLastLogMs = now;
+            PrintFormat("[T3EMA] EMA lines: indicator not calculated yet (BarsCalculated=%d) - waiting.", calc);
+           }
+         return;
+        }
+
+      ResetLastError();
+      if(ChartIndicatorAdd(0, 0, hLines))
+        {
+         gLinesOnChart = true;
+         gLinesWarned  = false;
+         gLinesFails   = 0;
+         gLinesName    = wantName;
+         PrintFormat("[T3EMA] EMA lines on chart: %s (yellow %d / red %d / blue %d).",
+                     wantName, EmaFastPeriod, EmaMidPeriod, EmaSlowPeriod);
+         return;
+        }
+
+      //--- 4. failed. Say so once immediately, then once a minute while it
+      //       persists, and recreate the handle after twelve straight failures
+      //       in case the one made during a busy attach is the problem.
+      int err = GetLastError();
+      gLinesFails++;
+      if(!gLinesWarned || (now - gLinesLastLogMs) > 60000)
+        {
+         gLinesWarned    = true;
+         gLinesLastLogMs = now;
+         PrintFormat("[T3EMA] ChartIndicatorAdd failed, error %d (%d in a row, BarsCalculated=%d). Retrying every 5s. Trading is unaffected.",
+                     err, gLinesFails, calc);
+        }
+      if(gLinesFails % 12 == 0)
+        {
+         IndicatorRelease(hLines);
+         hLines = INVALID_HANDLE;
+         Print("[T3EMA] EMA lines: releasing and recreating the indicator handle.");
+        }
+     }
+   else if(!want && gLinesOnChart)
+     {
+      ChartIndicatorDelete(0, 0, gLinesName);
+      gLinesOnChart = false;
+      PrintFormat("[T3EMA] Chart moved to %s - EMA lines removed. They draw only on %s, the timeframe the EA trades.",
+                  EnumToString(ChartPeriod(0)), EnumToString(EntryTF));
+     }
+   else if(!want && !gLinesOnChart && !gLinesWarned)
+     {
+      gLinesWarned = true;
+      PrintFormat("[T3EMA] EMA lines not drawn: chart is %s, the EA trades %s. Switch the chart to %s to see them.",
+                  EnumToString(ChartPeriod(0)), EnumToString(EntryTF), EnumToString(EntryTF));
+     }
   }
 
 //+------------------------------------------------------------------+
@@ -911,9 +1187,13 @@ int OnInit()
 
    PrintFormat("[T3EMA] Initialised. Symbol=%s Digits=%d Point=%.5f Pip=%.5f  TF=%s  EMAs %d/%d/%d  Risk=%.2f%%/%.2f%%  MaxPos=%d",
                _Symbol, gDigits, gPoint, gPip, EnumToString(EntryTF), EmaFastPeriod, EmaMidPeriod, EmaSlowPeriod, RiskPercent, MaxRiskPercent, MaxConcurrentPositions);
-   PrintFormat("[T3EMA] Entry: %s stack + %s + close re-crossing EMA9%s. Market order on the next bar open.",
-               "9/21/50", RequirePullback ? "a pullback across EMA9" : "NO pullback required (always-in)",
-               RequireCandleColor ? " with a same-direction candle" : "");
+   string modeTxt = (EntryMode == ENTRY_ANY_CLOSE) ? "ANY same-colour close across EMA9 while flat (operator spec)"
+                  : (EntryMode == ENTRY_FIRST_THEN_PULLBACK) ? "first close after the stack forms, then a pullback before each later entry"
+                  : "a pullback across EMA9 before EVERY entry";
+   PrintFormat("[T3EMA] Entry: 9/21/50 stack + %s%s. Market order on the next bar open.",
+               modeTxt, RequireCandleColor ? ", same-direction candle required" : "");
+   PrintFormat("[T3EMA] One position at a time (MaxConcurrentPositions=%d). Next entry only after the trade is closed%s.",
+               MaxConcurrentPositions, ResetArmOnClose ? " AND a fresh pullback has been seen (ResetArmOnClose)" : "");
    PrintFormat("[T3EMA] Geometry: SL at EMA50 %s %.0fp buffer, clamped [%.0f..%.0f] pips. TP = %.1f x SL. Breakeven win rate %.1f%% before spread.",
                "+/-", SLBufferPips, MinSLPips, MaxSLPips, RewardRatio, 100.0 / (1.0 + RewardRatio));
    PrintFormat("[T3EMA] Guards: daily halt %s | trade cap %s | cooldown %s | spread cap %.0fp | session %s | lot cap %.2f",
@@ -928,7 +1208,8 @@ int OnInit()
    Print("[T3EMA] *** REAL MONEY ACCOUNT *** Orders are placed automatically. Drop ", EmergencyStopFile,
          " into MQL5\\Files to halt new entries. Removing the EA does NOT close an open position.");
    if(!MQLInfoInteger(MQL_TESTER))
-      Print("[T3EMA] v1.0 has no config-signature epoch: the WIN RATE overall counter covers every trade under magic ", MagicNumber, " and does NOT reset when inputs change.");
+      Print("[T3EMA] No config-signature epoch: the WIN RATE overall counter covers every trade under magic ", MagicNumber, " and does NOT reset when inputs change.");
+   SyncEmaLines();
    return(INIT_SUCCEEDED);
   }
 
@@ -941,6 +1222,12 @@ void OnDeinit(const int reason)
       gHoldsLock = false;
      }
    ObjectsDeleteAll(0, PFX);
+   //--- v1.3.2: always attempt the delete by the deterministic name, whether or
+   //    not this instance believes it added the lines - an orphan left by an
+   //    earlier instance must not survive another re-attach.
+   ChartIndicatorDelete(0, 0, StringFormat("TripleEMA Lines(%d,%d,%d)", EmaFastPeriod, EmaMidPeriod, EmaSlowPeriod));
+   gLinesOnChart = false;
+   if(hLines != INVALID_HANDLE) { IndicatorRelease(hLines); hLines = INVALID_HANDLE; }
    ChartRedraw();
    if(hEmaF != INVALID_HANDLE) IndicatorRelease(hEmaF);
    if(hEmaM != INVALID_HANDLE) IndicatorRelease(hEmaM);
@@ -995,8 +1282,15 @@ void OnTick()
 void OnTimer()
   {
    if(!gInitOk) return;
+   SyncEmaLines();      // v1.3.1: self-throttled retry until the lines are on
    WriteHeartbeat();
    DrawPanel();
+  }
+
+void OnChartEvent(const int id, const long &lparam, const double &dparam, const string &sparam)
+  {
+   if(id == CHARTEVENT_CHART_CHANGE)
+      SyncEmaLines();
   }
 
 void OnTradeTransaction(const MqlTradeTransaction &trans, const MqlTradeRequest &request, const MqlTradeResult &result)
@@ -1008,6 +1302,12 @@ void OnTradeTransaction(const MqlTradeTransaction &trans, const MqlTradeRequest 
    ENUM_DEAL_ENTRY entry = (ENUM_DEAL_ENTRY)HistoryDealGetInteger(trans.deal, DEAL_ENTRY);
    if(entry == DEAL_ENTRY_OUT || entry == DEAL_ENTRY_INOUT)
      {
+      if(ResetArmOnClose && EntryMode != ENTRY_ANY_CLOSE && (gArmBuy || gArmSell))
+        {
+         gArmBuy = false; gArmSell = false;
+         gArmText = "cleared on close - waiting for a fresh pullback";
+         Print("[T3EMA] Trade closed - arm cleared. A new pullback across EMA9 is required before the next entry.");
+        }
       double net = HistoryDealGetDouble(trans.deal, DEAL_PROFIT) + HistoryDealGetDouble(trans.deal, DEAL_SWAP) + HistoryDealGetDouble(trans.deal, DEAL_COMMISSION);
       PrintFormat("[T3EMA] CLOSE %.2f lots @ %.2f  P/L %+.2f", HistoryDealGetDouble(trans.deal, DEAL_VOLUME), HistoryDealGetDouble(trans.deal, DEAL_PRICE), net);
       if(AlertOnClose) Alert(StringFormat("T3EMA CLOSE %.2f @ %.2f  P/L %+.2f", HistoryDealGetDouble(trans.deal, DEAL_VOLUME), HistoryDealGetDouble(trans.deal, DEAL_PRICE), net));

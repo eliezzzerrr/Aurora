@@ -2,7 +2,7 @@
 
 Third MT5 Expert Advisor in this repo. Attached to an **M1** chart on `XAUUSDc`, Exness cent account, **real money**. Requested 16 Sep 2026 as the replacement for TrendEMA, which was removed on 14 Sep.
 
-Current version: **`TripleEMA_Trend_v1.0.1.mq5`**. Magic **7333**. Kill switch: drop `TRIPLEEMA_STOP.txt` into `MQL5\Files`.
+Current version: **`TripleEMA_Trend_v1.3.2.mq5`** plus the companion indicator **`TripleEMA_Lines.mq5`**. Magic **7333**. Kill switch: drop `TRIPLEEMA_STOP.txt` into `MQL5\Files`.
 
 > Removing the EA does **not** close an open position — it keeps its SL/TP on the broker.
 
@@ -23,12 +23,24 @@ All indicator reads are at **shift 1** (the last closed bar), so nothing repaint
 ## The entry (BUY; SELL mirrors)
 
 1. Stack is BULL.
-2. **A bar has closed below EMA9 since the last entry** — the pullback. This arms the setup.
-3. The last closed bar closed **above EMA9** and was **bullish** (close > open). → BUY at market.
+2. The last closed bar closed **above EMA9** and was **bullish** (close > open).
+3. No position is open. → BUY at market on the next bar.
 
-Step 2 is what makes it a scalp rather than an always-in system. Without it, every bar of a trend that closes above EMA9 qualifies. `RequirePullback=false` removes it; `RequireCandleColor=false` removes the candle test.
+That is the operator's rule as stated, and it is the default (`EntryMode = ENTRY_ANY_CLOSE`). `RequireCandleColor=false` drops the candle test.
 
-A stack change clears the arm — a pullback inside the old trend is not a setup in the new one.
+### `EntryMode` — the pullback question
+
+v1.0–v1.2 added a requirement I invented: a close on the far side of EMA9 before every entry. Checked against the eight example trades from 16 Sep it **fails three of the seven winners, including the two largest** — 05:31 and 07:55 were the *first* confirmation bar after the stack formed (a pullback inside a brand-new stack cannot exist yet, and clearing the arms on the flip made those entries impossible), and 06:02 was a continuation with no close below EMA9. So it is now a choice:
+
+| Mode | Rule | Fits the examples |
+|---|---|---|
+| **`ENTRY_ANY_CLOSE`** (default) | any same-colour close across EMA9 while flat | 8 / 8 — also fires entries the operator skipped in extended trends |
+| `ENTRY_FIRST_THEN_PULLBACK` | the stack's first confirmation bar enters; every later entry needs a pullback first | 7 / 8 — misses 06:02 |
+| `ENTRY_PULLBACK_ONLY` | a pullback before every entry | ~5 / 8 |
+
+The tester should pick between them, not the sample. `ResetArmOnClose` applies to the two arming modes; in `ANY_CLOSE` there is no arm to reset.
+
+**One position at a time, and the next entry only after the trade is closed.** `MaxConcurrentPositions=1` refuses any signal while a position is open. Since v1.1 a close also **wipes the arm** (`ResetArmOnClose`): a pullback seen *during* the trade no longer counts, so the full cycle — pullback → recross → entry — is required again after every exit. Without that, the first bullish close after a take-profit fired immediately with no pullback in between, which is a chase off the exit rather than the method.
 
 ## Geometry
 
@@ -41,7 +53,7 @@ Pips are gold pips: **1 pip = 0.01 in price = $0.01**.
 | Refused if SL < `MinSLPips` (50) | a flat stack puts EMA50 on top of price; the lot would balloon. Two of the eight example trades had ~90–100 pip stops, so the floor is deliberately low |
 | Refused if SL > `MaxSLPips` (1500) | price has run far from EMA50; the entry is late |
 
-Both are **re-anchored to the actual fill** once the market order returns, so a slipped fill keeps its intended distances.
+On a slipped fill the **stop stays on the EMA50** — it is structural, not a pip count — and only the **target** is recomputed from the actual fill so the trade still pays `RewardRatio` on the distance really being risked. Risk moves slightly with the slip and the log prints the real figure. (v1.3 preserved pip distance instead, which walked the stop off the line by the slippage; the first live fill on 16 Sep landed 15 pips above the EMA50 it was meant to sit under.)
 
 ### The number that has to be beaten
 
@@ -78,9 +90,17 @@ Lot sizing is TrendEMA's `CalcLot` verbatim: size from the SL distance, round **
 | `STATUS` | WAIT / ARMED / BLOCKED (and why) / FILLED / HALTED |
 | `NEXT LOT` | what an entry from here would size to, and the SL distance |
 | `WIN TARGET` | breakeven vs the running win rate, in points |
+| `AVG TIME` | average time in trade — all, wins, losses, today. Paired IN→OUT by position id. With the stop nearer than the target, losers should die fast and winners run; a drift in either says something about the tape. The `OPEN` row shows the current position's age |
 | `BAR USED` | open time of the **closed** bar the values came from (server time) |
+| `EMA LINES` | whether the 9/21/50 lines are drawn on the chart, and why not if they are hidden |
 
-## Known gaps in v1.0
+## EMA lines on the chart
+
+`DrawEmas` (default on) adds the companion indicator `TripleEMA_Lines` to the chart — EMA 9 **yellow**, 21 **red**, 50 **blue**, the colours from the operator's TradingView setup. A built-in `iMA` handle cannot be recoloured from an EA, which is why the companion exists.
+
+They draw **only while the chart timeframe equals `EntryTF`**. M1 lines on an H1 chart would be meaningless, and H1 lines would show a trend the EA does not trade. Change the chart timeframe and the EA adds or removes them on its own; the `EMA LINES` panel row says which state you are in. If a copy of the indicator is already on the chart — left behind by an earlier instance, or added by hand — the EA adopts it rather than adding a second, because MT5 refuses two indicators with the same short name in one window (error 4114). It waits for the indicator to finish its first calculation before adding, retries every 5 s, logs once a minute while it fails, and recreates its handle after twelve straight failures. The EA trades identically on any chart timeframe — it never reads the chart period, only `EntryTF`.
+
+## Known gaps
 
 - **No config-signature epoch.** The `overall` win rate covers every trade under magic 7333 and does not reset when inputs change. Change geometry and the statistics pool.
 - **No backtest yet.** Every default above is from the operator's spec and example chart, not a sweep. The first tester run is the next step, before anything is tuned.
@@ -89,7 +109,7 @@ Lot sizing is TrendEMA's `CalcLot` verbatim: size from the SL distance, round **
 
 ## Install
 
-1. Copy `.mq5` and `.ex5` to `…\MQL5\Experts\Advisors\`
+1. Copy the EA `.mq5` and `.ex5` to `…\MQL5\Experts\Advisors\`, and `TripleEMA_Lines.mq5` / `.ex5` to `…\MQL5\Indicators\`
 2. Attach to an **M1 XAUUSDc** chart, allow algo trading
 3. Confirm the `[T3EMA] Initialised.` banner in the Experts log
 

@@ -63,7 +63,7 @@
 //  open position - that keeps its SL/TP on the broker. Demo first.
 //+------------------------------------------------------------------+
 #property copyright "Aurora TripleEMA Trend EA"
-#property version   "1.32"   // file is TripleEMA_Trend_v1.3.2 - bump both together
+#property version   "1.41"   // file is TripleEMA_Trend_v1.4.1 - bump both together
 #property description "M1 scalper: EMA 9/21/50 stack sets direction, pullback below/above EMA9 then a same-colour close re-crossing it triggers a market entry. SL at EMA50, TP 1.5R."
 
 #include <Trade\Trade.mqh>
@@ -75,7 +75,8 @@ enum ENUM_ENTRY_MODE
   {
    ENTRY_ANY_CLOSE,           // Any same-colour close across EMA9 while flat (the operator spec, default)
    ENTRY_FIRST_THEN_PULLBACK, // First close after the stack forms, then a pullback before each later entry
-   ENTRY_PULLBACK_ONLY        // A close on the far side of EMA9 required before EVERY entry (v1.0-v1.2 rule)
+   ENTRY_PULLBACK_ONLY,       // A close on the far side of EMA9 required before EVERY entry (v1.0-v1.2 rule)
+   ENTRY_FIRST_THEN_TOUCH     // First close after the stack forms; after that every TOUCH of EMA9 from the trade side enters (a wick counts)
   };
 
 //+------------------------------------------------------------------+
@@ -96,7 +97,25 @@ input bool   RequireCandleColor = true;        // Trigger bar must close in the 
 //    was a continuation with no close below EMA9. So the qualifier is now a
 //    choice, defaulting to the rule as the operator stated it. The tester,
 //    not the sample, should pick between them.
-input ENUM_ENTRY_MODE EntryMode = ENTRY_ANY_CLOSE; // What qualifies an entry once the stack is right
+//--- v1.4: FIRST_THEN_TOUCH, at the operator request on 17 Sep 00:31. The
+//    first entry in a stack still needs the confirming close; every entry
+//    after it is a continuation and fires the moment price touches last
+//    bar's EMA9 from the trade side - a wick is enough. Touch entries fill
+//    at the EMA rather than a point past it, so the stop (EMA50) is the
+//    stack width and 1.5R is nearer. The cost is that there is no
+//    confirmation at all on those entries: at a trend's end the touch IS the
+//    first tick of the reversal. Untested, like every mode here.
+input ENUM_ENTRY_MODE EntryMode = ENTRY_FIRST_THEN_TOUCH; // What qualifies an entry once the stack is right
+//--- v1.4.1: the close-rule "first entry" is only the first entry if the
+//    stack is actually NEW. v1.4 decided that by whether THIS instance had
+//    fired yet, so a re-attach in the middle of a two-hour bear stack (00:36
+//    on 17 Sep) treated the next bearish close as a first entry and sold at
+//    4342.24 with a 383-pip stop - no touch of EMA9, the exact entry the
+//    touch mode exists to replace. Now the breakout window is measured in
+//    bars since the stack formed, walked back from history on attach, so a
+//    restart cannot mistake an old stack for a young one. Inside the window
+//    the confirming close enters; after it, only a touch of EMA9 does.
+input int    FirstEntryWindowBars = 3;         // Close-rule entries only within this many bars of the stack forming; after that, touch only
 //--- v1.1: operator rule, 16 Sep - one position, and the NEXT entry only
 //    after the trade is closed. The position cap already enforced the first
 //    half. The second half needed this: a pullback seen WHILE a trade was
@@ -128,6 +147,15 @@ input bool   SizeFromEquity     = true;        // Size from equity (false = bala
 input bool   UseFixedLot        = false;       // Fixed lot instead of % risk (EDGE TESTING ONLY)
 input double FixedLotSize       = 0.01;        // Lot when UseFixedLot is on
 input int    MaxConcurrentPositions = 1;       // Scalper: one at a time
+//--- v1.3.3: the trigger bar must have OPENED after the last close. Twice on
+//    16/17 Sep a take-profit filled on the first tick of a new bar and the EA
+//    re-entered seconds later (51 s at 23:48, 4 s at 00:22) - the qualifying
+//    bar was the bar the old trade had been open in. The operator's eight
+//    example trades never re-enter on the same bar; the tightest gap is about
+//    two minutes. This is narrower than the pullback modes: it keeps ANY_CLOSE
+//    and the continuation entries, and removes only the zero-gap artefact.
+//    1 = the trigger bar starts after the close. 2 = one full bar between.
+input int    MinBarsAfterClose  = 1;           // Trigger bar must open this many bars after the last close (0 = off)
 input int    MaxDailyTradeCount = 0;           // Max fills per day (0 = unlimited)
 input double MaxDailyLossPercent= 3.0;         // Halt for the day at this realised loss % (0 = off)
 input int    CooldownMinutesAfterLoss = 0;     // Wait after a losing close (0 = off)
@@ -193,6 +221,16 @@ int      gLastStack = 0;
 bool     gArmBuy  = false;    // a close below EMA9 has been seen in a BULL stack
 bool     gArmSell = false;    // a close above EMA9 has been seen in a BEAR stack
 string   gArmText = "-";
+//--- v1.4: touch mode. Armed once the stack has had its first (close-rule)
+//    entry; then a tick reaching last bar's EMA9 FROM THE TRADE SIDE fires.
+//    "From the trade side" is the whole safety of it: right after a stop-out
+//    price sits beyond EMA9, and "at or past the line" would re-enter on the
+//    very rally that just stopped us. So price must first be back on the
+//    trend side of EMA9 and then come back to touch it.
+bool     gTouchArmed     = false;
+int      gStackAge       = 0;      // v1.4.1: bars the current stack has held, counted from history on attach
+bool     gWasOnTradeSide = false;
+bool     gTouchSideInit  = false;
 string   gLastSignal = "none yet";
 
 //--- status
@@ -212,6 +250,7 @@ double   gDayStartBalance = 0.0;
 double   gDayPL = 0.0;
 int      gDayTrades = 0, gDayWins = 0, gDayLosses = 0;
 datetime gLastLossTime = 0;
+datetime gLastCloseTime = 0;   // v1.3.3: last OUT deal of ours, any result - rebuilt from history on attach
 int      gAllWins = 0, gAllLosses = 0, gAllStreak = 0, gAllBestWin = 0, gAllWorstLoss = 0;
 double   gAllGrossWin = 0.0, gAllGrossLoss = 0.0;   // gross loss stored POSITIVE
 //--- v1.1: trade durations, paired IN->OUT by position id. The operator
@@ -419,6 +458,7 @@ void RefreshAllTimeStats()
          gAllDurSum += dur; gAllDurN++;
          if(dTime >= gDayStart) { gDayDurSum += dur; gDayDurN++; }
         }
+      if(dTime > gLastCloseTime) gLastCloseTime = dTime;   // v1.3.3
       double net = HistoryDealGetDouble(t, DEAL_PROFIT) + HistoryDealGetDouble(t, DEAL_SWAP) + HistoryDealGetDouble(t, DEAL_COMMISSION);
       if(net > 0.0)
         {
@@ -555,9 +595,32 @@ bool RefreshIndicators()
   }
 
 //+------------------------------------------------------------------+
+//| v1.4.1: how many closed bars the current stack has held. Walks back  |
+//| from shift 1 while the EMA order matches; capped, so a stack older    |
+//| than the cap just reads as the cap.                                   |
+//+------------------------------------------------------------------+
+int StackAgeFromHistory(const int cap = 300)
+  {
+   if(gStack == 0) return(0);
+   double f[], m[], sl[];
+   if(CopyBuffer(hEmaF, 0, 1, cap, f) != cap) return(1);
+   if(CopyBuffer(hEmaM, 0, 1, cap, m) != cap) return(1);
+   if(CopyBuffer(hEmaS, 0, 1, cap, sl) != cap) return(1);
+   //--- CopyBuffer into a plain array is oldest-first: index cap-1 is shift 1
+   int age = 0;
+   for(int i = cap - 1; i >= 0; i--)
+     {
+      int st = (f[i] > m[i] && m[i] > sl[i]) ? 1 : ((f[i] < m[i] && m[i] < sl[i]) ? -1 : 0);
+      if(st != gStack) break;
+      age++;
+     }
+   return(age);
+  }
+
+//+------------------------------------------------------------------+
 //| Gates that apply to any new entry                                 |
 //+------------------------------------------------------------------+
-bool EntryGatesOpen(string &why)
+bool EntryGatesOpen(string &why, const int trigShift = 1)
   {
    if(gStopFilePresent)                        { why = "kill-switch file present";              return(false); }
    if(!TerminalInfoInteger(TERMINAL_TRADE_ALLOWED)) { why = "algo trading disabled in terminal"; return(false); }
@@ -573,6 +636,23 @@ bool EntryGatesOpen(string &why)
                                                { why = StringFormat("cooldown %d min after a loss", CooldownMinutesAfterLoss); return(false); }
    if(CountPositions() >= MaxConcurrentPositions)
                                                { why = StringFormat("position cap %d reached", MaxConcurrentPositions); return(false); }
+   //--- v1.3.3: no same-bar re-entry. The bar being acted on (shift 1) must
+   //    have opened at least MinBarsAfterClose periods after the last close;
+   //    with 1 that means strictly after it, so a TP that fills on the first
+   //    tick of a bar cannot be followed by an entry off that same bar.
+   if(MinBarsAfterClose > 0 && gLastCloseTime > 0)
+     {
+      //--- close-rule entries act on the shift-1 bar; a touch entry happens
+      //    inside the FORMING bar, so it passes trigShift = 0
+      datetime trigOpen = iTime(_Symbol, EntryTF, trigShift);
+      datetime need     = gLastCloseTime + (datetime)((MinBarsAfterClose - 1) * PeriodSeconds(EntryTF));
+      if(!(trigOpen > need))
+        {
+         why = StringFormat("trigger bar %s overlaps the last close %s - needs a fresh bar",
+                            TimeToString(trigOpen, TIME_MINUTES), TimeToString(gLastCloseTime, TIME_MINUTES | TIME_SECONDS));
+         return(false);
+        }
+     }
    double sp = CurrentSpreadPips();
    if(sp > MaxSpreadPips)                      { why = StringFormat("spread %.0fp > %.0fp", sp, MaxSpreadPips); return(false); }
    return(true);
@@ -695,13 +775,25 @@ void Evaluate()
    if(gStack != gLastStack)
      {
       gArmBuy = false; gArmSell = false;
+      gTouchArmed = false; gTouchSideInit = false;     // v1.4: a new stack needs its own first close
+      gStackAge = (gStack == 0) ? 0 : 1;                // v1.4.1: this closed bar is the first of the new stack
       if(EntryMode == ENTRY_FIRST_THEN_PULLBACK)
         {
          if(gStack > 0) gArmBuy  = true;
          if(gStack < 0) gArmSell = true;
         }
      }
+   else if(gStack != 0)
+      gStackAge++;                                      // v1.4.1: same stack, one more closed bar
    gLastStack = gStack;
+
+   //--- v1.4.1: once the breakout window has passed, continuations are touches
+   //    whether or not a close-rule entry ever fired in this stack
+   if(EntryMode == ENTRY_FIRST_THEN_TOUCH && gStack != 0 && !gTouchArmed && gStackAge > FirstEntryWindowBars)
+     {
+      gTouchArmed = true; gTouchSideInit = false;
+      PrintFormat("[T3EMA] Stack is %d bars old (window %d) - entries from here are touches of EMA9 only.", gStackAge, FirstEntryWindowBars);
+     }
 
    if(gStack == 0)
      {
@@ -717,6 +809,13 @@ void Evaluate()
       if(gClose1 < gEmaF1)
         {
          gArmBuy = true;
+         if(EntryMode == ENTRY_FIRST_THEN_TOUCH)
+           {
+            gArmText = gTouchArmed ? StringFormat("TOUCH armed - buy when price comes back up to EMA9 %.2f", gEmaF1)
+                                   : StringFormat("BULL stack %d bars old - last bar closed below EMA9", gStackAge);
+            SetStatus("WAIT", gTouchArmed ? "below EMA9 - buy on the touch back up" : "young bull stack, last close under EMA9", PanelTextColor);
+            return;
+           }
          gArmText = (EntryMode == ENTRY_ANY_CLOSE)
                     ? "BULL stack - last bar closed below EMA9, next bullish close above it enters"
                     : "BUY armed - closed below EMA9, waiting for a bullish close back above";
@@ -724,13 +823,23 @@ void Evaluate()
          return;
         }
       bool colourOk = !RequireCandleColor || gClose1 > gOpen1;
-      bool armOk    = (EntryMode == ENTRY_ANY_CLOSE) || gArmBuy;
+      bool armOk    = (EntryMode == ENTRY_ANY_CLOSE)
+                   || (EntryMode == ENTRY_FIRST_THEN_TOUCH && !gTouchArmed && gStackAge <= FirstEntryWindowBars)   // v1.4.1: first entry, and only while the stack is young
+                   || (EntryMode != ENTRY_FIRST_THEN_TOUCH && gArmBuy);
       if(gClose1 > gEmaF1 && colourOk && armOk)
         {
          if(!EntryGatesOpen(why)) { SetStatus("BLOCKED", "BUY signal but " + why, clrOrange); return; }
          Fire(1);
          gArmBuy = false;
-         gArmText = "BUY fired - needs a new pullback";
+         if(EntryMode == ENTRY_FIRST_THEN_TOUCH) { gTouchArmed = true; gTouchSideInit = false; gArmText = "BUY fired - continuations now fire on any touch of EMA9 from above"; }
+         else gArmText = "BUY fired - needs a new pullback";
+         return;
+        }
+      if(EntryMode == ENTRY_FIRST_THEN_TOUCH)
+        {
+         gArmText = gTouchArmed ? StringFormat("TOUCH armed - buy the moment price dips to EMA9 %.2f (wick counts)", gEmaF1)
+                                : StringFormat("BULL stack %d bars old - first bullish close above EMA9 enters (window %d)", gStackAge, FirstEntryWindowBars);
+         SetStatus("WAIT", gTouchArmed ? "buy on touch of EMA9" : "bull stack, first confirming close not seen yet", PanelTextColor);
          return;
         }
       if(EntryMode == ENTRY_ANY_CLOSE)
@@ -752,6 +861,13 @@ void Evaluate()
    if(gClose1 > gEmaF1)
      {
       gArmSell = true;
+      if(EntryMode == ENTRY_FIRST_THEN_TOUCH)
+        {
+         gArmText = gTouchArmed ? StringFormat("TOUCH armed - sell when price comes back down to EMA9 %.2f", gEmaF1)
+                                : StringFormat("BEAR stack %d bars old - last bar closed above EMA9", gStackAge);
+         SetStatus("WAIT", gTouchArmed ? "above EMA9 - sell on the touch back down" : "young bear stack, last close over EMA9", PanelTextColor);
+         return;
+        }
       gArmText = (EntryMode == ENTRY_ANY_CLOSE)
                  ? "BEAR stack - last bar closed above EMA9, next bearish close below it enters"
                  : "SELL armed - closed above EMA9, waiting for a bearish close back below";
@@ -759,13 +875,23 @@ void Evaluate()
       return;
      }
    bool colourOkS = !RequireCandleColor || gClose1 < gOpen1;
-   bool armOkS    = (EntryMode == ENTRY_ANY_CLOSE) || gArmSell;
+   bool armOkS    = (EntryMode == ENTRY_ANY_CLOSE)
+                 || (EntryMode == ENTRY_FIRST_THEN_TOUCH && !gTouchArmed && gStackAge <= FirstEntryWindowBars)
+                 || (EntryMode != ENTRY_FIRST_THEN_TOUCH && gArmSell);
    if(gClose1 < gEmaF1 && colourOkS && armOkS)
      {
       if(!EntryGatesOpen(why)) { SetStatus("BLOCKED", "SELL signal but " + why, clrOrange); return; }
       Fire(-1);
       gArmSell = false;
-      gArmText = "SELL fired - needs a new pullback";
+      if(EntryMode == ENTRY_FIRST_THEN_TOUCH) { gTouchArmed = true; gTouchSideInit = false; gArmText = "SELL fired - continuations now fire on any touch of EMA9 from below"; }
+      else gArmText = "SELL fired - needs a new pullback";
+      return;
+     }
+   if(EntryMode == ENTRY_FIRST_THEN_TOUCH)
+     {
+      gArmText = gTouchArmed ? StringFormat("TOUCH armed - sell the moment price rises to EMA9 %.2f (wick counts)", gEmaF1)
+                             : StringFormat("BEAR stack %d bars old - first bearish close below EMA9 enters (window %d)", gStackAge, FirstEntryWindowBars);
+      SetStatus("WAIT", gTouchArmed ? "sell on touch of EMA9" : "bear stack, first confirming close not seen yet", PanelTextColor);
       return;
      }
    if(EntryMode == ENTRY_ANY_CLOSE)
@@ -779,6 +905,34 @@ void Evaluate()
                           : "BEAR stack - waiting for a pullback above EMA9";
       SetStatus("WAIT", gArmSell ? "SELL armed, last bar not a bearish close below EMA9" : "bear stack, no pullback yet", PanelTextColor);
      }
+  }
+
+//+------------------------------------------------------------------+
+//| v1.4: touch entries - runs on EVERY tick, unlike Evaluate            |
+//+------------------------------------------------------------------+
+void CheckTouchEntry()
+  {
+   if(EntryMode != ENTRY_FIRST_THEN_TOUCH || !gTouchArmed || gStack == 0 || gEmaF1 <= 0.0) return;
+   double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   //--- "on the trade side" = beyond EMA9 in the direction of the trend:
+   //    above it in a bull stack, below it in a bear stack. The level is
+   //    last bar's EMA9, fixed for the whole bar, so nothing repaints.
+   bool onSide = (gStack > 0) ? (bid > gEmaF1) : (ask < gEmaF1);
+   if(!gTouchSideInit) { gWasOnTradeSide = onSide; gTouchSideInit = true; return; }
+   bool touched = gWasOnTradeSide && !onSide;
+   gWasOnTradeSide = onSide;
+   if(!touched) return;
+
+   string why = "";
+   if(!EntryGatesOpen(why, 0))                     // the touch is in the FORMING bar
+     {
+      SetStatus("BLOCKED", StringFormat("touch of EMA9 %.2f but %s", gEmaF1, why), clrOrange);
+      return;
+     }
+   PrintFormat("[T3EMA] Touch of EMA9 %.2f from the %s side - %s on continuation.",
+               gEmaF1, gStack > 0 ? "upper" : "lower", gStack > 0 ? "BUY" : "SELL");
+   Fire(gStack);
   }
 
 //+------------------------------------------------------------------+
@@ -897,8 +1051,8 @@ void DrawPanel()
 
    PanelRow(r++, "EMA 9/21/50", StringFormat("%s / %s / %s", DoubleToString(gEmaF1, 2), DoubleToString(gEmaM1, 2), DoubleToString(gEmaS1, 2)), PanelTextColor, PanelTextColor);
    string stackTxt; color stackClr;
-   if(gStack > 0)      { stackTxt = "BULL   9 > 21 > 50"; stackClr = clrLime; }
-   else if(gStack < 0) { stackTxt = "BEAR   9 < 21 < 50"; stackClr = clrTomato; }
+   if(gStack > 0)      { stackTxt = StringFormat("BULL   9 > 21 > 50   %d bars", gStackAge); stackClr = clrLime; }
+   else if(gStack < 0) { stackTxt = StringFormat("BEAR   9 < 21 < 50   %d bars", gStackAge); stackClr = clrTomato; }
    else                { stackTxt = "NONE   EMA9 in the middle"; stackClr = clrGray; }
    PanelRow(r++, "STACK", stackTxt, PanelTextColor, stackClr);
    PanelRow(r++, "LAST BAR", StringFormat("close %s  %s EMA9  %s candle",
@@ -1180,7 +1334,19 @@ int OnInit()
    RefreshDailyStats();
    RefreshAllTimeStats();
    gLastBar = iTime(_Symbol, EntryTF, 0);
-   if(RefreshIndicators()) gLastStack = gStack;
+   if(RefreshIndicators())
+     {
+      gLastStack = gStack;
+      gStackAge  = StackAgeFromHistory();
+      if(EntryMode == ENTRY_FIRST_THEN_TOUCH && gStack != 0 && gStackAge > FirstEntryWindowBars)
+        {
+         gTouchArmed = true; gTouchSideInit = false;
+         PrintFormat("[T3EMA] Attached inside a %s stack that is %d bars old (window %d) - starting in TOUCH mode, no close-rule entry.",
+                     gStack > 0 ? "BULL" : "BEAR", gStackAge, FirstEntryWindowBars);
+        }
+      else if(gStack != 0)
+         PrintFormat("[T3EMA] Attached in a %s stack %d bars old.", gStack > 0 ? "BULL" : "BEAR", gStackAge);
+     }
 
    EventSetTimer(1);
    gInitOk = true;
@@ -1189,11 +1355,14 @@ int OnInit()
                _Symbol, gDigits, gPoint, gPip, EnumToString(EntryTF), EmaFastPeriod, EmaMidPeriod, EmaSlowPeriod, RiskPercent, MaxRiskPercent, MaxConcurrentPositions);
    string modeTxt = (EntryMode == ENTRY_ANY_CLOSE) ? "ANY same-colour close across EMA9 while flat (operator spec)"
                   : (EntryMode == ENTRY_FIRST_THEN_PULLBACK) ? "first close after the stack forms, then a pullback before each later entry"
+                  : (EntryMode == ENTRY_FIRST_THEN_TOUCH) ? "first close after the stack forms, then every TOUCH of EMA9 from the trade side (wick counts)"
                   : "a pullback across EMA9 before EVERY entry";
    PrintFormat("[T3EMA] Entry: 9/21/50 stack + %s%s. Market order on the next bar open.",
                modeTxt, RequireCandleColor ? ", same-direction candle required" : "");
-   PrintFormat("[T3EMA] One position at a time (MaxConcurrentPositions=%d). Next entry only after the trade is closed%s.",
-               MaxConcurrentPositions, ResetArmOnClose ? " AND a fresh pullback has been seen (ResetArmOnClose)" : "");
+   PrintFormat("[T3EMA] One position at a time (MaxConcurrentPositions=%d). Next entry only after the trade is closed%s%s.",
+               MaxConcurrentPositions,
+               (ResetArmOnClose && EntryMode != ENTRY_ANY_CLOSE) ? " AND a fresh pullback has been seen (ResetArmOnClose)" : "",
+               MinBarsAfterClose > 0 ? StringFormat(", and never off the bar the trade closed in (MinBarsAfterClose=%d)", MinBarsAfterClose) : "");
    PrintFormat("[T3EMA] Geometry: SL at EMA50 %s %.0fp buffer, clamped [%.0f..%.0f] pips. TP = %.1f x SL. Breakeven win rate %.1f%% before spread.",
                "+/-", SLBufferPips, MinSLPips, MaxSLPips, RewardRatio, 100.0 / (1.0 + RewardRatio));
    PrintFormat("[T3EMA] Guards: daily halt %s | trade cap %s | cooldown %s | spread cap %.0fp | session %s | lot cap %.2f",
@@ -1274,6 +1443,8 @@ void OnTick()
       else
          SetStatus("STALE", "indicator read failed on the new bar", clrRed);
      }
+   gPhase = "TOUCH";
+   if(!gStopFilePresent) CheckTouchEntry();       // v1.4: intrabar, every tick
    gPhase = "IDLE";
    WriteHeartbeat();
    DrawPanel();
@@ -1302,7 +1473,9 @@ void OnTradeTransaction(const MqlTradeTransaction &trans, const MqlTradeRequest 
    ENUM_DEAL_ENTRY entry = (ENUM_DEAL_ENTRY)HistoryDealGetInteger(trans.deal, DEAL_ENTRY);
    if(entry == DEAL_ENTRY_OUT || entry == DEAL_ENTRY_INOUT)
      {
-      if(ResetArmOnClose && EntryMode != ENTRY_ANY_CLOSE && (gArmBuy || gArmSell))
+      datetime ct = (datetime)HistoryDealGetInteger(trans.deal, DEAL_TIME);
+      if(ct > gLastCloseTime) gLastCloseTime = ct;       // v1.3.3
+      if(ResetArmOnClose && EntryMode != ENTRY_ANY_CLOSE && EntryMode != ENTRY_FIRST_THEN_TOUCH && (gArmBuy || gArmSell))
         {
          gArmBuy = false; gArmSell = false;
          gArmText = "cleared on close - waiting for a fresh pullback";

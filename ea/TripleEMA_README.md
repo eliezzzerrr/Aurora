@@ -2,7 +2,7 @@
 
 Third MT5 Expert Advisor in this repo. Attached to an **M1** chart on `XAUUSDc`, Exness cent account, **real money**. Requested 16 Sep 2026 as the replacement for TrendEMA, which was removed on 14 Sep.
 
-Current version: **`TripleEMA_Trend_v1.3.2.mq5`** plus the companion indicator **`TripleEMA_Lines.mq5`**. Magic **7333**. Kill switch: drop `TRIPLEEMA_STOP.txt` into `MQL5\Files`.
+Current version: **`TripleEMA_Trend_v1.4.1.mq5`** plus the companion indicator **`TripleEMA_Lines.mq5`**. Magic **7333**. Kill switch: drop `TRIPLEEMA_STOP.txt` into `MQL5\Files`.
 
 > Removing the EA does **not** close an open position — it keeps its SL/TP on the broker.
 
@@ -26,7 +26,7 @@ All indicator reads are at **shift 1** (the last closed bar), so nothing repaint
 2. The last closed bar closed **above EMA9** and was **bullish** (close > open).
 3. No position is open. → BUY at market on the next bar.
 
-That is the operator's rule as stated, and it is the default (`EntryMode = ENTRY_ANY_CLOSE`). `RequireCandleColor=false` drops the candle test.
+That is the operator's rule as stated. Since v1.4 the default is **`ENTRY_FIRST_THEN_TOUCH`**: the *first* entry in a stack uses that close rule; every entry after it is a continuation and fires the moment price **touches last bar's EMA9 from the trade side** — a wick is enough. `RequireCandleColor=false` drops the candle test on the close-rule entries.
 
 ### `EntryMode` — the pullback question
 
@@ -37,8 +37,15 @@ v1.0–v1.2 added a requirement I invented: a close on the far side of EMA9 befo
 | **`ENTRY_ANY_CLOSE`** (default) | any same-colour close across EMA9 while flat | 8 / 8 — also fires entries the operator skipped in extended trends |
 | `ENTRY_FIRST_THEN_PULLBACK` | the stack's first confirmation bar enters; every later entry needs a pullback first | 7 / 8 — misses 06:02 |
 | `ENTRY_PULLBACK_ONLY` | a pullback before every entry | ~5 / 8 |
+| **`ENTRY_FIRST_THEN_TOUCH`** (default since v1.4) | first entry on the close rule; afterwards any touch of EMA9 from the trade side, intrabar | fills a point or two *earlier* than the boxes were drawn — better price, stack-width stop, nearer 1.5R, no confirmation at all on continuation entries |
+
+**Why "from the trade side" matters.** After a stop-out, price sits beyond EMA9. If "at or past the line" counted, the EA would re-enter on the very rally that just stopped it. So price must first return to the trend side of EMA9 and then come back to touch it. **When is an entry "first"?** Measured in bars since the stack formed, not by whether this instance has traded (v1.4.1). The confirming close enters only within `FirstEntryWindowBars` (3) of the stack forming; after that, only a touch of EMA9 does. The age is walked back from history on attach, so restarting the EA inside a two-hour stack starts it in touch mode — v1.4 treated the next close as a "first" entry and sold at 4342.24 with a 383-pip stop, no touch, the exact entry the mode exists to replace. The `STACK` panel row shows the age.
 
 The tester should pick between them, not the sample. `ResetArmOnClose` applies to the two arming modes; in `ANY_CLOSE` there is no arm to reset.
+
+### No same-bar re-entry (`MinBarsAfterClose`, v1.3.3)
+
+Twice on 16/17 Sep a take-profit filled on the first tick of a new bar and `ANY_CLOSE` re-entered seconds later — 51 s at 23:48, **4 s** at 00:22 — because the qualifying bar was the one the old trade had been open in. The example trades never do this; the tightest gap between a close and the next entry is about two minutes. So the bar being acted on must have **opened after the last close** (`MinBarsAfterClose = 1`; `2` demands a full bar between). It is narrower than the pullback modes: it keeps `ANY_CLOSE` and the continuation entries, and removes only the zero-gap artefact. Rebuilt from deal history on attach, so a re-attach cannot forget the last close.
 
 **One position at a time, and the next entry only after the trade is closed.** `MaxConcurrentPositions=1` refuses any signal while a position is open. Since v1.1 a close also **wipes the arm** (`ResetArmOnClose`): a pullback seen *during* the trade no longer counts, so the full cycle — pullback → recross → entry — is required again after every exit. Without that, the first bullish close after a take-profit fired immediately with no pullback in between, which is a chase off the exit rather than the method.
 
@@ -71,6 +78,7 @@ The panel's `WIN TARGET` row derives the real figure from realised average win /
 |---|---|
 | Risk per trade | **0.25%** of equity, 0.50% hard ceiling, 2.0 lot cap |
 | Concurrent positions | **1** |
+| No same-bar re-entry | `MinBarsAfterClose = 1` — the trigger bar must have opened after the last close |
 | Daily loss halt | 3% realised; day rolls at 12:00 ET |
 | Spread cap | 40 pips |
 | Cooldown after loss | off (`CooldownMinutesAfterLoss`) |

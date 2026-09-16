@@ -8,6 +8,33 @@ Levels are price, not pips. 1 pip = 0.01.
 
 ---
 
+## 2026-09-16 08:52 — breakdown levels named, target 4,100–4,050
+
+> Team, sharing the 15 minutes chart below, take note of the further breakdown levels w/in
+> 4,250–4,262 to confirm further downtrend to target 4,100–4,050 in favor of short sellers.
+> Link to Head and Shoulders bearish reversal pattern last Sept. 11 trade guidance.
+
+Chart annotations: R3 4,330 with EMA9 D1 at 4,342 · R2 4,310–4,317 · R1 4,300 · immediate
+support 4,250–4,262, labelled "confirmation for further downtrend, breakdown from these
+levels" · potential next retracement 4,050–4,100 in favour of short sellers.
+
+| His level | EA zone at 10:43 | |
+|---|---|---|
+| R3 4,330 / EMA9 D1 4,342 | not ranked | 4th–5th up, outside the top three |
+| R2 4,310–4,317 | not ranked at 10:43; became R1 4,310.61 and R2 4,316.06 by 10:45 | match once price rose |
+| R1 4,300 | R2 tops at 4,300.52, R3 4,300.61–4,301.76 | match |
+| — | R1 4,287.79–4,291.77 (5.9) | EA extra |
+| — | S1 4,271.26–4,273.67 (4.7) | EA extra |
+| Immediate support 4,250–4,262 | S2 4,260.82–4,261.44 (3.2) and S3 4,253.09–4,253.72 (4.8) | both inside his band |
+| Target 4,100–4,050 | invisible | 180.00 away, four times `MaxZoneDistancePips` |
+
+Side agrees: EA reads Daily close 4,288.29 against Daily EMA9 4,359.56, he quotes EMA9 D1 at
+4,342 live on OANDA. Same conclusion, different feed and shift.
+
+**The divergence is the trade, not the level.** He is positioning for a 180.00 ride to
+4,100–4,050. The EA sells rallies for 2R a time inside a 45.00 window and will keep doing that
+through the same move.
+
 ## 2026-09-15 07:23 — bounce off the Daily MA50, and a stand-down order
 
 > Gold did bounce from MA50 4,275 in the Daily chart yesterday after breaking down from 4,300
@@ -144,6 +171,37 @@ all the damage landed in tier 2: −1,169 to −1,914 in 2026.
 list. He uses more sources, the EA can now use the same ones, and copying them makes results
 worse. Whatever he does that works lives in the judgment and the geometry, not in what he
 draws on the chart.
+
+## Appendix — the original 19 screenshots (10 Sep 2026)
+
+Shared in one batch when the EA was first specified. Dates are read off each chart axis and
+are approximate. Recorded for the level-construction patterns rather than the calls.
+
+| Chart | Levels marked |
+|---|---|
+| 4H, ~5 Sep | R3 4,510 · R2 4,490 · R1 4,479 · S1 4,405–4,411 · S2 4,376–4,391 · S3 4,365–4,370 |
+| 15M, ~4 Sep 10:58 | R3 4,500 · R2 4,493 · R1 4,487 · S1 4,467 · S2 4,456–4,458 · S3 4,420–4,430 |
+| 4H, ~4 Sep 08:17 | Retracement 0.236 4,457.05 · 0.382 4,423.72 · 0.5 4,396.78 · 0.618 4,369.84 · 0.786 4,331.48 |
+| 4H, ~4 Sep | R3 4,500–4,510 · R2 4,464–4,486 · R1 4,440–4,450 · S1 4,400–4,419 · S2 4,382–4,387 · S3 4,352–4,364 |
+| 15M, ~3 Sep 13:30 | R3 4,500–4,510 · R1 4,440–4,450 · S1 4,395–4,397 · S2 4,364–4,382 · S3 4,344–4,352 |
+| 15M, ~2 Sep 22:28 | Previous support turned resistance 4,396 · R3 4,396–4,420 · R2 4,374–4,387 · R1 4,344–4,355 · S1 4,323 · S2 4,315 · S3 4,282–4,308 · Kumo support D1 4,269 · MA50 D1 4,223 |
+| 4H, ~2 Sep 13:51 | R3 EMA9 4H 4,355 · R2 4,335 · R1 4,326 · MA200 4H 4,289 |
+| 4H, ~2 Sep 09:46 | R3 4,335–4,340 · R2 4,330 · R1 4,326 · MA50 D1 4,222 · downside R1 4,230 · R2 4,150–4,200 · R3 4,065–4,103 |
+| 15M, ~1 Sep 18:28 | R3 4,415–4,423 · R2 4,396–4,400 · R1 4,389 · S4 4,350–4,362 (default) · S4 4,311–4,327 (conservative) |
+| 5M, ~1 Sep 10:32 | BL#1 4,430–4,440 · BL#2 4,426 · BL#2 4,417 · BL#3 4,387–4,405 |
+| 15M, ~1 Sep 07:59 | R3 4,486–4,500 · R2 4,464–4,472 · R1 4,450–4,455 · S1 4,430–4,440 · S2 4,417–4,426 · S3 4,387–4,405 |
+| 15M, ~31 Aug 00:37 | R3 4,546 · R2 4,529 · R1 4,486–4,503 · S1 4,445–4,450 · S2 4,424 · S3 4,400 · MA50 current 4,539 |
+| 1M, ~28 Aug 15:22 | TP 4,610 · lower end of aggressive BL 4,573 |
+| 4H, ~28 Aug 08:14 | R3 4,643 · R2 4,621 · R1 4,618 · S1 4,593 · S2 4,585 · S3 4,550–4,563 · MA50 M15 4,546 · EMA9 D1 4,557 |
+| 4H, ~27 Aug 21:53 | MA50 4H 4,540 · EMA9 D1 4,542 · historical support D1 4,529 |
+| 15M, ~27 Aug 21:44 | R3 4,605 · R2 4,600 · R1 4,593 · S1 4,583 · S2 4,563 |
+| 15M, ~27 Aug | R2 4,637–4,640 · R2 4,627–4,633 · R1 4,623–4,625 · S1 4,600 · S2 4,583–4,590 · S3 4,563 · EMA9 D1 4,549 |
+| 1M, ~26 Aug 20:16 | R3 4,050 · R2 4,040 · R1 4,030 · MA50 15M 4,636 · BL#2 4,013–4,015 |
+| 1M, ~26 Aug 18:49 | Same levels, later snapshot |
+
+Patterns that came out of this batch and shaped v1.0: three tiers each side, bands rather than
+lines, buy limits labelled BL#1 aggressive / BL#2 default / BL#3 conservative, and levels drawn
+from swings, cloud edges, MA50 and EMA9 across 15M/4H/D1 plus fib retracements.
 
 ## Open gaps — still untested
 

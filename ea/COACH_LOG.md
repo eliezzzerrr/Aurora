@@ -8,6 +8,80 @@ Levels are price, not pips. 1 pip = 0.01.
 
 ---
 
+## 2026-09-17 06:58 — Daily map after the reversal: resistance 4,280–4,317, supports to 4,019
+
+Chart only, no text. OANDA Daily. The 16 Sep candle that spiked to 4,380 closed back down with a
+long upper wick, and price at post time is 4,269, under the Daily MA50 at 4,282 and under the
+daily cloud (4,328–4,403). The bearish case he has held since 11 Sep survived its own
+invalidation test by the daily close.
+
+Chart annotations: R3 4,317 · R2 4,295–4,300 · R1 4,280–4,287 · S1 4,200–4,235 · S2 4,150 ·
+S3 4,019–4,065. Red arrow at the MA50/cloud rejection, green arrow at the 3,942 swing low that
+anchors his fib.
+
+| His level | EA zone at 08:15 | |
+|---|---|---|
+| R3 4,317 | not ranked | above the top three |
+| R2 4,295–4,300 | R3 4,295.42–4,296.05 (3.6), sell limit resting at 4,295.42 | match |
+| — | R2 4,291.46–4,292.08 (2.8), sell limit resting at 4,291.46 | EA extra, between his R1 and R2 |
+| R1 4,280–4,287, holds the Daily MA50 | S1 4,282.17–4,283.03 (6.4) and R1 4,285.88–4,286.87 (3.5) | match; price sat inside his band at rebuild, so the EA splits it into a support below and a resistance above |
+| S1 4,200–4,235 | not ranked | 50.00–85.00 below the market, outside `MaxZoneDistancePips` |
+| S2 4,150 / S3 4,019–4,065 | invisible | 120.00–265.00 away |
+
+Side agrees: EA reads Daily close 4,271.57 against Daily EMA9 4,329.76, SELL. His chart says the
+same with price under the MA50 and the cloud.
+
+**Alignment on this post is the closest since 10 Sep.** Both of his tradeable resistances are EA
+zones with limits resting in them. What still does not carry over is unchanged: his supports are
+Daily-chart structure 50.00 to 265.00 below, the EA works a 45.00 window and takes 2R at a time.
+He is short for a ride to 4,200 and below; the EA is short for 10.80.
+
+Note for the record: the 16 Sep entry logged at 21:48 said the EA would flip to BUY if the daily
+candle finished above 4,344. It finished at 4,271.57. No flip.
+
+## 2026-09-16 22:51 — 4H bearish map: resistance 4,400 / MA50 4,360, targets restated
+
+Chart only, no text. OANDA 4H, posted after the FED-day rally had already carried price from
+4,283 to a 4,360 high. Same thesis as the 08:52 post, now with the ceiling named.
+
+Chart annotations: Psychological resistance 4,400 · MA50 (4H, blue) 4,360 · red arrows on the
+three prior rejections at the cloud/MA50 (~4 Sep 4,520, ~10 Sep 4,420, ~12 Sep 4,410) and two
+more pointing at 4,400 and 4,360 as the next · "Bearish Scenario" · confirmation of further
+downtrend on a break below 4,250–4,262 · short target 1 4,150–4,200 · short target 2
+4,100–4,050. Ichimoku span readout 4,319.5 / 4,372.3; the forward cloud is bearish from about
+4,320 to 4,400. Price 4,343.6 at post time, 16.00 under the MA50.
+
+Read plainly: the bearish case survives the rally, and its line in the sand has moved up from
+the Daily EMA9 (~4,344, his 11 Sep invalidation, which price is sitting on) to the 4H MA50 at
+4,360 with 4,400 as the last word. Targets unchanged.
+
+| His level | EA at 22:51 | |
+|---|---|---|
+| Psychological resistance 4,400 | no source for round numbers | third post to name it — open gap 2 |
+| MA50 4H 4,360 | not in the last logged set; MA50 4H is an enabled source, so it enters on the next rebuild | zones last rebuilt 07:42 from price 4,283 and topped out at R3 4,301 — 60.00 below the market by post time |
+| Break level 4,250–4,262 | S2 4,260.82–4,261.44 · S3 4,253.09–4,253.72 (07:42 set) | still matches, as at 08:52 |
+| Targets 4,150–4,200 / 4,100–4,050 | invisible | 150.00–290.00 away against `MaxZoneDistancePips` 4,500 |
+
+**SRLevels was in the NY blackout (20:00–05:00 local) when this was posted** — no limits, no
+zone rebuild logged since 07:42, no trades after the single 4,321.90 stop-out earlier in the
+day. Its zone set was built from 4,283 and price ended the day at 4,344, so the map it would
+trade at 05:00 is not the one it is holding. Nothing to compare at the moment of the post
+except that both read the side the same way: Daily close vs Daily EMA9, with the two now
+touching — the EA flips to BUY if the daily candle finishes above 4,344 and he says the same
+about 4,360/4,400 one timeframe up.
+
+**The M1 scalper was working his ceiling from the other side.** TripleEMA (v1.3.2 → v1.4.1
+over the evening) shorted 4,342–4,349 five times between 22:57 and 01:12, 3 wins and 2
+stops, +131.70 — the same 4,340–4,360 band his arrows point at, reached by a 9/21/50 EMA stack
+on M1 with 300–700-pip stops rather than by his levels. Coincidence of place, not of method;
+no change follows from it.
+
+**What it exposes, again:** the geometry, not the levels. His stop is 4,400, about 56.00 above
+the market; his first target is 150.00 below it. That is a 2.7R trade the EA cannot express
+inside a 45.00 window with a 2R floor, and open gaps 3 and 4 already say so. The only new item
+is the third naming of 4,400 — the round-number source in gap 2 is now the most-repeated
+unbuilt thing in this log.
+
 ## 2026-09-16 08:52 — breakdown levels named, target 4,100–4,050
 
 > Team, sharing the 15 minutes chart below, take note of the further breakdown levels w/in

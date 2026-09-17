@@ -2,7 +2,7 @@
 
 Third MT5 Expert Advisor in this repo. Attached to an **M1** chart on `XAUUSDc`, Exness cent account, **real money**. Requested 16 Sep 2026 as the replacement for TrendEMA, which was removed on 14 Sep.
 
-Current version: **`TripleEMA_Trend_v1.4.1.mq5`** plus the companion indicator **`TripleEMA_Lines.mq5`**. Magic **7333**. Kill switch: drop `TRIPLEEMA_STOP.txt` into `MQL5\Files`.
+Current version: **`TripleEMA_Trend_v1.5.1.mq5`** plus the companion indicator **`TripleEMA_Lines.mq5`**. Magic **7333**. Kill switch: drop `TRIPLEEMA_STOP.txt` into `MQL5\Files`.
 
 > Removing the EA does **not** close an open position — it keeps its SL/TP on the broker.
 
@@ -57,8 +57,10 @@ Pips are gold pips: **1 pip = 0.01 in price = $0.01**.
 |---|---|
 | **SL** | EMA50 (shift 1) ± `SLBufferPips` (5) — essentially on the slow EMA, as the example stops were drawn |
 | **TP** | `RewardRatio` (1.5) × the SL distance |
-| Refused if SL < `MinSLPips` (50) | a flat stack puts EMA50 on top of price; the lot would balloon. Two of the eight example trades had ~90–100 pip stops, so the floor is deliberately low |
-| Refused if SL > `MaxSLPips` (1500) | price has run far from EMA50; the entry is late |
+| Refused if SL < `MinSLPips` (**250**, v1.5.1) | a flat stack puts EMA50 next to price and the stop inside one M1 bar. First full live day, 17 Sep: the nine entries with stops of 210 pips or less went 2/9 for −300.70, four of them stopped inside 30 s, one slipped 87 pips on the fill and risked 0.48%; the other 25 went 11/25 for +179.10. The floor also refuses the two ~100-pip example trades and one 97-pip winner; the operator accepted that. As-logged, not re-run |
+| Refused if SL > `MaxSLPips` (**1000**, v1.4.2) | price has run far from EMA50; the entry is late. Cut the other way once on 17 Sep: it refused 43 touches during a 500-pip squeeze, one of which would have paid, then allowed the 994-pip buy at the end of the run |
+
+A refused entry logs once per bar per reason (v1.5.1); the `STATUS` and `NEXT LOT` rows carry the live reason.
 
 On a slipped fill the **stop stays on the EMA50** — it is structural, not a pip count — and only the **target** is recomputed from the actual fill so the trade still pays `RewardRatio` on the distance really being risked. Risk moves slightly with the slip and the log prints the real figure. (v1.3 preserved pip distance instead, which walked the stop off the line by the slippage; the first live fill on 16 Sep landed 15 pips above the EMA50 it was meant to sit under.)
 
@@ -78,6 +80,7 @@ The panel's `WIN TARGET` row derives the real figure from realised average win /
 |---|---|
 | Risk per trade | **0.25%** of equity, 0.50% hard ceiling, 2.0 lot cap |
 | Concurrent positions | **1** |
+| Time stop | `MaxHoldMinutes = 60` (v1.5): a position still open after an hour is closed at market, whatever its P/L. Neutral on its first day: four closes, net −40.30 |
 | No same-bar re-entry | `MinBarsAfterClose = 1` — the trigger bar must have opened after the last close |
 | Daily loss halt | 3% realised; day rolls at 12:00 ET |
 | Spread cap | 40 pips |
@@ -96,7 +99,7 @@ Lot sizing is TrendEMA's `CalcLot` verbatim: size from the SL distance, round **
 | `LAST BAR` | close vs EMA9, candle colour — the two trigger conditions |
 | `ARM` | whether a pullback has been seen and what it is waiting for |
 | `STATUS` | WAIT / ARMED / BLOCKED (and why) / FILLED / HALTED |
-| `NEXT LOT` | what an entry from here would size to, and the SL distance |
+| `NEXT LOT` | what an entry from here would size to, and the SL distance — or why nothing would fire (under the floor, over the cap) |
 | `WIN TARGET` | breakeven vs the running win rate, in points |
 | `AVG TIME` | average time in trade — all, wins, losses, today. Paired IN→OUT by position id. With the stop nearer than the target, losers should die fast and winners run; a drift in either says something about the tape. The `OPEN` row shows the current position's age |
 | `BAR USED` | open time of the **closed** bar the values came from (server time) |
@@ -113,7 +116,7 @@ They draw **only while the chart timeframe equals `EntryTF`**. M1 lines on an H1
 - **No config-signature epoch.** The `overall` win rate covers every trade under magic 7333 and does not reset when inputs change. Change geometry and the statistics pool.
 - **No backtest yet.** Every default above is from the operator's spec and example chart, not a sweep. The first tester run is the next step, before anything is tuned.
 - No Friday cutoff, no news gate. Positions are short-lived by design, but a 1-minute scalp through a release will slip.
-- Untested on the live account as of this writing.
+- First full live day, 17 Sep 2026: 34 trades, 13 wins, −121.60 net. The morning trended and paid (+260.80 at the 19:58 peak); the New York evening gave it all back on a flat stack (1/9, −382.40). The 250-pip floor is the response; whether New York needs a session window is one day of data and undecided.
 
 ## Install
 

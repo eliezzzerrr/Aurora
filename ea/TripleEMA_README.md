@@ -2,7 +2,7 @@
 
 Third MT5 Expert Advisor in this repo. Attached to an **M1** chart on `XAUUSDc`, Exness cent account, **real money**. Requested 16 Sep 2026 as the replacement for TrendEMA, which was removed on 14 Sep.
 
-Current version: **`TripleEMA_Trend_v1.5.1.mq5`** plus the companion indicator **`TripleEMA_Lines.mq5`**. Magic **7333**. Kill switch: drop `TRIPLEEMA_STOP.txt` into `MQL5\Files`.
+Current version: **`TripleEMA_Trend_v1.5.2.mq5`** plus the companion indicator **`TripleEMA_Lines.mq5`**. Magic **7333**. Kill switch: drop `TRIPLEEMA_STOP.txt` into `MQL5\Files`.
 
 > Removing the EA does **not** close an open position — it keeps its SL/TP on the broker.
 
@@ -104,6 +104,8 @@ Lot sizing is TrendEMA's `CalcLot` verbatim: size from the SL distance, round **
 | `AVG TIME` | average time in trade — all, wins, losses, today. Paired IN→OUT by position id. With the stop nearer than the target, losers should die fast and winners run; a drift in either says something about the tape. The `OPEN` row shows the current position's age |
 | `BAR USED` | open time of the **closed** bar the values came from (server time) |
 | `EMA LINES` | whether the 9/21/50 lines are drawn on the chart, and why not if they are hidden |
+
+Rows are truncated at 88 characters, or fewer if the chart is too narrow to hold that (v1.5.2 — the old flat 64-character cap cut the `ARM` and `STATUS` rows mid-word). The background sizes itself to the widest row actually drawn.
 
 ## EMA lines on the chart
 

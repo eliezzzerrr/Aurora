@@ -150,3 +150,54 @@ both years; it is the safer choice if 0.6 trades a day is acceptable.
 
 Not yet tested: real-tick modelling, XAUUSDc on the live server, spread widening at the
 daily break. The runner is `runbt.py` in the portable tester folder (see memory notes).
+
+## 17 Sep 2026: the invalidation line (v1.13, tested, not deployed)
+
+The side comes from the daily close against the Daily EMA9, and the EA never looked at that
+line again during the day. On 17 Sep the close put the side at SELL under 4,329.76, gold
+rallied 90.00 through the line, and the EA sold twice above it (19:09 at 4,333.84, 19:53 at
+4,338.68), both stopped: −203.60 of a −306.00 day. The coach's map that morning had no
+resistance above 4,317. He does not sell above his own invalidation.
+
+`UseInvalidationLine` (v1.13): on a SELL day no sell limit or rejection entry may sit above
+the line, on a BUY day none below it. While price is beyond the line every zone on the trade
+side is beyond it too, so the side is paused with no extra state and resumes when price comes
+back under. It does **not** flip the side: 16 Sep fired the same signal at 4,344, ran to 4,380
+and the daily candle closed at 4,271.57. An intraday flip buys the top of that day. The panel
+gets an `INVALIDATION` row with the line, where price is against it, and since when.
+
+Live fills on the Daily rule, 14–17 Sep, re-scored against the line in force at the time:
+
+| | Trades | W | L | Win % | P/L |
+|---|---|---|---|---|---|
+| As traded | 14 | 5 | 9 | 36% | +49.20 |
+| With the line | 12 | 5 | 7 | 42% | +252.80 |
+
+Both removed trades are the 17 Sep sells above the line. Nothing else on those four days was
+beyond it. The 10–11 Sep trades ran on the 4H side rule and cannot be re-scored.
+
+Tester, minute bars, XAUUSD on the demo, 10,000 USD, `MaxLotSizeCap=0`, otherwise the live
+v1.12 defaults (tier 1 off, unlimited fills, cap 2, 500–1,000 stop, NY blackout, noon-ET
+rollover):
+
+| | 2026 Jan–Sep, line off | line on | 2025, line off | line on |
+|---|---|---|---|---|
+| Net | −1,341 | −1,140 | −758 | −221 |
+| PF | 0.88 | 0.89 | 0.90 | 0.97 |
+| Trades | 429 | 374 | 274 | 233 |
+| W / L | 169 / 260 | 147 / 227 | 105 / 169 | 91 / 142 |
+| Win % (needs) | 39.4 (42.0) | 39.3 (41.8) | 38.3 (40.4) | 39.1 (39.5) |
+| Max DD | 18.5% | 14.7% | 11.2% | 6.9% |
+| Losses in a row | 12 | 10 | 11 | 6 |
+
+What it says. The line removes 13–15% of the trades and they are worse than average (22W 33L
+in 2026, 14W 27L in 2025), so net, drawdown and the losing streaks improve in both years. The
+win rate does not move. And the configuration it is bolted onto loses in the tester in both
+years with or without it: the tier-1-off build that has been live since 15 Sep has no edge on
+minute bars, which the 15 Sep tier-1-off runs already said. Tier 1, the bucket the tester
+likes (+680 in 2026, +1,370 in 2025 in the v1.11.1 runs), is the one that lost 3 of 3 live and
+was switched off.
+
+Status: compiled clean, run in the portable tester, committed. **Not in the live Advisors
+folder.** Before a live deploy, throttle the crossing log: it prints on every cross of the
+line, 1,512 lines in the 2026 run, about eight a day.

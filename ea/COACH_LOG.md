@@ -39,6 +39,34 @@ He is short for a ride to 4,200 and below; the EA is short for 10.80.
 Note for the record: the 16 Sep entry logged at 21:48 said the EA would flip to BUY if the daily
 candle finished above 4,344. It finished at 4,271.57. No flip.
 
+**What the day did, logged at 23:55.** Gold rallied about 90.00 from the 4,271.57 close to
+4,363, through every level on his map. The EA, short all day by that same close, sold six
+rallies and kept one: 1W 5L, -306.00, -1.45% of capital. Worst day since it went live.
+
+| Time | Entry | Result |
+|---|---|---|
+| 08:42 | sell 4,291.46 [R2] | **+205.20** |
+| 09:00 | sell 4,285.88 [R2] | -107.50 |
+| 11:42 | sell 4,295.42 [R2] | -102.50 |
+| 15:14 | sell 4,322.67 [R2] | -97.60 |
+| 19:09 | sell 4,333.84 [R2] | -105.70 |
+| 19:53 | sell 4,338.68 [R3] | -97.90 |
+
+42 limits placed, 18 cancelled on re-rank, 1 on the blackout. Unlike 16 Sep, where a straight-line
+rally let the re-rank pull the orders out of the path for one loss total, this one climbed in
+steps and paused at each zone long enough to fill the limit resting in it.
+
+**The post is what fixed it.** His map that morning topped out at R3 4,317 and he took nothing
+above it, because his own invalidation - the Daily EMA9, the level this log named on 14 Sep -
+sat at 4,329.76. The EA had been using that line to pick a side at the daily close and then
+ignoring it for the rest of the day. The last two fills, 19:09 and 19:53, were sells above it:
+-203.60, two thirds of the loss. Shipped the same night as v1.13.1, `UseInvalidationLine`:
+no sell limit or rejection entry above the line on a SELL day, none below it on a BUY day, and
+no intraday flip - the flip stays at the daily close where he keeps it. Re-scored over every
+fill on the Daily rule, 14-17 Sep, it removes exactly those two trades and blocks no winner.
+Tester, both years: 2026 -1,341 -> -1,140, 2025 -758 -> -221, drawdown and losing streaks down
+in both, win rate flat. See `SRLevels_README.md`.
+
 ## 2026-09-16 22:51 — 4H bearish map: resistance 4,400 / MA50 4,360, targets restated
 
 Chart only, no text. OANDA 4H, posted after the FED-day rally had already carried price from
@@ -233,6 +261,7 @@ pivots from H1 and H4 only. **Drove v1.7** (`UseEntryPivots`, 15M swings as a so
 | His bands are lines and ~5.00 zones whatever the ATR | v1.7.2, fixed 250-pip merge |
 | His invalidation is the **Daily** EMA9 | v1.8, `TrendEMATF = PERIOD_D1` |
 | He rests limits at every tier; the EA's nearest tier kept getting sliced | v1.9, rejection on tier 1 only (operator's idea, best of four tested) |
+| He never trades **beyond** his invalidation, not just on the wrong side of it at the close | v1.13.1, `UseInvalidationLine` - the side pauses while price is past the Daily EMA9 |
 
 ## Tested and rejected — 14 Sep 2026
 

@@ -201,3 +201,36 @@ was switched off.
 Status: compiled clean, run in the portable tester, committed. **Not in the live Advisors
 folder.** Before a live deploy, throttle the crossing log: it prints on every cross of the
 line, 1,512 lines in the 2026 run, about eight a day.
+
+**Replay of the live window, 10–16 Sep, real ticks, deposit 21,200, v1.13 defaults.** 8 trades,
+4W 4L, +427.60, identical with the line on or off: no entry on those days sat beyond the
+line, which is what the log re-score said. 17 Sep cannot be replayed until the server day has
+closed; the tester only runs closed days.
+
+| Day | Tester, line off | Tester, line on | Live, as traded |
+|---|---|---|---|
+| Thu 10 Sep | 2, 1W 1L, +109.53 | same | 3, 1W 2L, +20.10 (old side rule, buys) |
+| Fri 11 Sep | 1, 0W 1L, −101.20 | same | 2, 0W 2L, −246.30 |
+| Mon 14 Sep | 2, 2W 0L, +432.95 | same | 3, 2W 1L, +333.20 |
+| Tue 15 Sep | 2, 1W 1L, +102.76 | same | 4, 2W 2L, +122.30 |
+| Wed 16 Sep | 1, 0W 1L, −109.11 | same | 1, 0W 1L, −100.30 |
+
+Where the configurations coincide the replay matches the live fills to the minute and within
+15 pips (14 Sep 09:58, 15 Sep 10:01 and 18:54, 16 Sep 10:56). The differences are config: tier
+1 was on live until 15 Sep and is off in v1.13, the NY blackout only went live on 16 Sep, and
+the live terminal was off on the morning of 14 Sep.
+
+**Consecutive-loss halt, measured post hoc on the same four runs** (every entry after the Nth
+straight loss in the EA day is dropped; positions already open keep running). Nets here exclude
+swap, so the baselines sit a little above the report figures.
+
+| Halt after | 2026 line off | 2026 line on | 2025 line off | 2025 line on |
+|---|---|---|---|---|
+| none | −1,175 | −995 | −629 | −115 |
+| 2 losses | −1,477 | −1,681 | −647 | −83 |
+| 3 losses | −1,420 | −1,349 | −1,034 | −287 |
+| 4 losses | −1,052 | −1,041 | −797 | −115 |
+
+A halt after three straight losses costs 170 to 400 a year in every configuration: the trades
+after a third loss win at least as often as the average trade. 17 Sep, where it would have
+saved 203.60, is the day that prompted the idea and the exception. Rejected, 17 Sep 2026.

@@ -8,6 +8,84 @@ Levels are price, not pips. 1 pip = 0.01.
 
 ---
 
+## 2026-09-18 06:32 — He flips long, and publishes an actual trade plan
+
+Three images: a Google Sheet headed **FOLLOW MY TRADING**, a 15M OANDA chart, and the Discord
+post carrying them.
+
+> Sharing the 15 minutes chart below as of 6:29 am, Gold retraces exactly w/in EMA9 in the
+> Daily chart or S1- 4,343 in the 15M chart that I posted last night. It needs to breakout from
+> MA50 (Blue line). 4,349 to regain its momentum to trade back w/in 4,350- 4,370 to max
+> potential short term target at 4,400. We expect gold to move w/in the range (Support and
+> Resistance) identified below.
+
+**The bearish case is over.** He has been short since 11 Sep. Yesterday's rally closed the
+Daily candle at 4,346.40, above the Daily EMA9, and this post has him buying the retrace into
+that same EMA9. The EA flipped with him, independently, at 08:00 this morning:
+`Side changed: SELL -> BUY [D1 close 4346.40 vs EMA9 4333.09]`. First time since this log
+started that the EA and the coach turned on the same candle.
+
+### The sheet — new, and the most explicit thing he has ever posted
+
+Tab "Scalping" (there is a second tab, "Swing/Trend Follow Trading"). Header says
+*"Initial Phase - Sharing 60% of my Actual Trading Execution"* and
+*"Overall Strategy: Will depend on Bias for the Day (Green Candle - Bullish Overall Buy,
+[Red] Candle - Overall Short)"*.
+
+| # | Side | Entry | Targets | Invalidation | Session | Type | Tranche |
+|---|---|---|---|---|---|---|---|
+| 1 | Short | 4,400.00 | 4,350 / 4,370 / 4,390 | 4,410.00 | Asian–NY | Default (Med-High) | 1 of 2 |
+| 2 | Short | 4,376–4,380 | 4,325 / 4,335 / 4,350 | 4,410.00 | Asian–NY | Aggressive (HIGH) | 2 of 2 |
+| 1 | Buy | 4,340–4,343 | 4,360 / 4,380 / 4,400 | 4,278.00 | London–NY | Aggressive (HIGH) | 1 of 3 |
+| 2 | Buy | 4,325–4,335 | 4,350 / 4,370 / 4,400 | 4,278.00 | London–NY | Default (Med-High) | 2 of 3 |
+| 3 | Buy | 4,306–4,310 | 4,330 / 4,350 / 4,370 | 4,278.00 | London–NY | Conservative (Low) | 3 of 3 |
+
+Reminders on the sheet: lot by risk appetite, 0.01 low / 0.05 medium / 0.10 high; **maximum 3
+tranches per direction, to limit market exposure**.
+
+15M chart levels: R3 4,380–4,400 · R2 4,365–4,372 (printed "4,465", a typo) · R1 4,356 ·
+S1 4,340–4,343 · S1 4,323–4,325 · S1 4,306–4,312 · a red "Invalidation level zone" at 4,281.68.
+
+### Against the EA, 08:00–09:30 today
+
+| His level | EA zone | |
+|---|---|---|
+| Buy 1, 4,340–4,343 (aggressive) | 4,338.68–4,343.68, **score 18.9**, the session's best; buy limit rested at 4,343.68 from 08:30 | match |
+| Buy 2, 4,325–4,335 (default) | 4,330.99–4,335.38, score 13.7 [fib 0.382, EMA9 D1, kumo M15, EMA9 H4, piv M15, MA50 D1, piv H1]; limit at 4,335.38 | match at the top of his band |
+| Buy 3, 4,306–4,310 (conservative) | not ranked this morning | 35.00 below the market |
+| Short 1 and 2, 4,376–4,400 | not tradeable | the EA is one-sided on a BUY day |
+
+Neither buy limit had filled by 09:40; price went the other way, 4,343 to 4,362.
+
+### Four things this post settles
+
+**1. The tier ladder is his ladder.** Three tranches per direction, nearest = aggressive, furthest
+= conservative, one limit each. That is exactly `TradeTier1/2/3`, arrived at independently on
+10 Sep. It also says plainly that his **nearest** tranche is the high-risk one — the EA's tier 1,
+which went 0-for-3 live and was switched off on 15 Sep. He rates it the same way and still takes
+it, at a third of the size of his high-risk lot.
+
+**2. His invalidation is two layers, and this log had only noticed one.** The Daily EMA9 decides
+the *bias* (14 Sep: "needs to trade back above EMA9 in the Daily chart"), and that is what
+v1.13.1 now uses to pick and pause the side. The *trade* invalidation is separate and structural:
+4,278 for every buy tranche, 4,410 for every short, so one stop for the whole ladder, 65.00 below
+the top entry. The EA puts a 6.50–7.50 stop beyond each zone edge. Unchanged gap, now with his
+own numbers on it: his per-trade risk is roughly ten times the EA's, and his targets are 2 to 6
+times further out.
+
+**3. Sessions.** Buys are tagged London–NY, shorts Asian–NY. The EA's NY blackout (08:00–18:00 ET,
+shipped 17 Sep at the operator's request) covers the whole New York half of his buy window.
+The EA can only take his buy tranches between London and 20:00 Manila.
+
+**4. Three targets per trade, scaled out.** The EA takes one, at the next zone with a 2R floor.
+Partials were built and removed on the operator's instruction on 10 Sep ("no remove the
+partials"). His first target on Buy 1 is 4,360, about 1.7R against his own invalidation; the
+third is 4,400. Worth re-reading if the 2R floor ever comes back up.
+
+**Nothing shipped off this post.** The alignment it shows is on the side rule and the tier
+ladder, both already in. The two real divergences — his structural stop with scaled targets, and
+both-sides trading — are the same two the operator has already decided against, on 10 and 14 Sep.
+
 ## 2026-09-17 06:58 — Daily map after the reversal: resistance 4,280–4,317, supports to 4,019
 
 Chart only, no text. OANDA Daily. The 16 Sep candle that spiked to 4,380 closed back down with a
